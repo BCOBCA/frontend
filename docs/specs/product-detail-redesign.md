@@ -1,0 +1,9 @@
+# Product detail reference layout
+
+- Match the supplied commerce reference using existing Expo/React Native, Lucide and red/white tokens: breadcrumb, white purchase panel, vertical thumbnail rail, product options/quantity/actions and a desktop brand/related-products sidebar. Stack on mobile without horizontal overflow.
+- Preserve gallery paging, option selection, stock-aware cart, login redirects, service consultation, reviews, favorites and affiliate sharing. Add image enlargement and a real buy-now action.
+- Buy now prepares only the selected SKU/quantity for checkout; other cart rows remain in the cart but are not selected. Verify selection before navigating. Never create an order automatically.
+- Show actual brand/review/product data. No invented official badges, follower counts, sales, ratings, flash-sale timers, warranties or shipping offers. Specs come from existing variant attributes; missing specs remain absent.
+- Functional information/specification/review tabs; readable descriptions and review states. Related products use a compact presentation of the shared product card.
+- Plan: test buy-now selection → implement responsive gallery/details/sidebar → preserve and restyle reviews → typecheck/lint/tests/build → verify desktop/mobile and controls in a real browser.
+- Seller panel follows the supplied reference: circular logo, actual store name and verified badge, two statistic columns (rating and public product count), outlined “Xem gian hàng” and solid red “Theo dõi”. No join date. Reuse the public dealer detail, product count endpoint and existing follow behavior; verification never implies manufacturer authorization. Store reviews are not supported by the current API, so show an explicit empty rating instead of a fabricated score. Validate verified/unverified, followed/loading/error and empty-count states; check desktop/mobile rendering.

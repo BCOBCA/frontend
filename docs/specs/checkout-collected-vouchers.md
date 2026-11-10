@@ -1,0 +1,7 @@
+# Collected checkout vouchers
+
+Show the authenticated user's collected, remaining vouchers at checkout, separated into merchandise and shipping. Select at most one per category. On entering checkout automatically choose the eligible pair with the greatest actual savings; manual changes (including none) persist until the shopper chooses automatic selection again. Eligibility is evaluated against the current cart, original eligible merchandise value, shipping fee, dates, targets, membership and remaining usage. Shipping discounts never reduce merchandise accounting.
+
+Contract: extend preview/order requests with optional `voucherCodes: string[]` (max two, one per category). Preview adds `autoSelectVouchers` and returns owned voucher options with computed savings/eligibility/reason and `appliedVoucherCodes`. Order submits exactly the preview's selected codes. Existing single `voucherCode` remains supported for older clients; reject mixed contracts. New array contract requires AVAILABLE ownership. Null new order fields are omitted during hashing to preserve old retry hashes.
+
+Plan: backend pure eligibility/selection tests and implementation; shared preview/checkout validation and dual usage accounting; isolated PostgreSQL flow test; frontend picker/selection/route tests and UI; browser synthetic verification; full regression, TypeScript, lint and .NET checks. No migrations, new dependencies, real orders, deployment or commits.

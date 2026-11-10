@@ -1,0 +1,7 @@
+# Shipping address list
+
+- `app/addresses.tsx` now renders the reference-style list with a location/title header, top add action, white rows, and a red-tinted default row/badge. Default addresses sort first. Phones use stacked rows and compact controls: 36px visible row buttons and a 38px add button, with extra hit areas and reserved space for 44px touch targets. Desktop controls keep their original sizes.
+- Added `AddressCard` and `AddressList` under `src/components/addresses`. Existing province/ward query keys resolve stored codes to current names; failed/unavailable catalogs fall back to saved codes without blocking rows.
+- Added `setDefaultAddress` in `src/services/addresses.ts`: PUTs explicit unchanged address fields plus `isDefault: true` to the existing endpoint. Server already clears other defaults transactionally. Mutations disable competing row actions and invalidate the list after success. Existing edit/add routes and delete behavior remain intact.
+- Loading skeletons, empty state, fetch retry and mutation errors are covered in the UI. Mutation errors keep their row controls available for an intentional retry.
+- Verification: 13 focused address tests, TypeScript and full ESLint. Browser preview checked desktop and 375/320px screenshots, resolved location names, default-row reorder and 44px control targets; no horizontal overflow or console warnings/errors. Preview used synthetic addresses and local callbacks; no saved address was changed and authenticated mutations were not exercised. Temporary preview removed.

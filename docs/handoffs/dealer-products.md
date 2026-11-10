@@ -1,0 +1,9 @@
+# Dealer Products tab
+
+- DealerProducts replaces the previous Products empty state beneath DealerDetailTabs. No promotional banner was added. Desktop has category/price sidebar and 5-column maximum grid; smaller screens collapse categories and reduce column count. Grid/list, category, price, sort, count and pagination controls use real dealer-scoped APIs.
+- URL keys: productCategory/productSort/productPage/minPrice/maxPrice/productView; switching filters resets productPage, switching view preserves it. Existing dealer slug/tab and unrelated route values remain.
+- Price Apply supports integer VND and dot-grouped Vietnamese prices, validates nonnegative/bounded values and ordered ranges. Reset clears category and price bounds.
+- DealerProductCard uses contained product images, computed discount badges, actual ratings/sold counts, price/old price, stock-aware cart action. Guests go to login; signed-in users POST existing `/cart/items` with explicit product/variant IDs and invalidate cart. Unavailable variants cannot be added. No fake rating or sales badges.
+- Storefront data helpers/DTOs are in services/dealer-products.ts. Main global category grid keeps showing root categories after the new children were seeded. Generic product filtering includes descendants on backend.
+- Required API: `/dealers/{id}/products` and `/dealers/{id}/product-categories`; deploy updated backend before using the online API. DB seed contains 21 demo products; their descriptions explicitly state sample prices/stock.
+- Verification: TypeScript, focused ESLint, service filter/price tests, SSR storefront tests including no-banner/empty/sold-out states, existing dealer/tab and category regression tests. A separate local API confirmed cart unit price; live browser rendering could not be checked because neither browser runtime nor DevTools was available.

@@ -14,6 +14,7 @@ type SessionRequestConfig = InternalAxiosRequestConfig & { retried?: boolean; se
 let accessToken: string | null = null;
 let sessionUserId: string | null = null;
 let refreshing: Promise<AuthResult> | null = null;
+let restoring: Promise<AuthResult | null> | null = null;
 let expired: () => void = () => {};
 let profileChanged: (profile: Profile) => void = () => {};
 let sessionQueue: Promise<unknown> = Promise.resolve();
@@ -21,7 +22,7 @@ const publicAuthPaths = new Set(['/auth/login', '/auth/register', '/auth/refresh
 export const onSessionExpired = (callback: () => void) => { expired = callback; };
 export const onSessionProfileChanged = (callback: (profile: Profile) => void) => { profileChanged = callback; };
 export function isSessionRejected(error: unknown): boolean {
-  return isAxiosError(error) && [401, 403].includes(error.response?.status ?? 0);
+  return isAxiosError(error) && error.response?.status === 401;
 }
 async function withSessionLock<T>(operation: () => Promise<T>): Promise<T> {
   const run = () => Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.locks ? navigator.locks.request('bcobca-session', operation) : operation();
@@ -41,24 +42,34 @@ export async function acceptSession(result: AuthResult, allowIdentityChange = fa
   return result;
 }
 export async function clearSession() { accessToken = null; sessionUserId = null; await deleteRefreshToken(); }
-export function loginSession(input: unknown, register = false): Promise<AuthResult> {
+export async function registerAccount(input: unknown): Promise<void> {
+  await transport.post('/auth/register', input);
+}
+export function loginSession(input: unknown): Promise<AuthResult> {
   return withSessionLock(async () => {
-    const reply = await transport.post<Envelope<AuthResult>>(register ? '/auth/register' : '/auth/login', input);
+    const reply = await transport.post<Envelope<AuthResult>>('/auth/login', input);
     return acceptSession(reply.data.data, true);
   });
 }
 export function refreshSession(): Promise<AuthResult> {
   if (!refreshing) refreshing = withSessionLock(async () => {
-    const reply = await transport.post<Envelope<AuthResult>>('/auth/refresh', { refreshToken: await readRefreshToken() });
-    return acceptSession(reply.data.data);
+    try {
+      const reply = await transport.post<Envelope<AuthResult>>('/auth/refresh', { refreshToken: await readRefreshToken() });
+      return await acceptSession(reply.data.data);
+    } catch (error) {
+      // Clear once, inside the session lock, before a queued login can start.
+      if (isSessionRejected(error)) { await clearSession(); expired(); }
+      throw error;
+    }
   }).finally(() => { refreshing = null; });
   return refreshing;
 }
-export async function restoreSession(): Promise<AuthResult | null> {
-  return withSessionLock(async () => {
+export function restoreSession(): Promise<AuthResult | null> {
+  if (!restoring) restoring = withSessionLock(async () => {
     const reply = await transport.post<Envelope<AuthResult | null>>('/auth/session', { refreshToken: await readRefreshToken() });
     return reply.data.data ? acceptSession(reply.data.data) : null;
-  });
+  }).finally(() => { restoring = null; });
+  return restoring;
 }
 client.interceptors.request.use(config => {
   const sessionConfig = config as SessionRequestConfig;
@@ -75,11 +86,8 @@ client.interceptors.response.use(response => {
   if (error.response?.status === 401 && original && !original.retried && !publicAuthPaths.has(original.url?.split('?')[0] ?? '')) {
     original.retried = true;
     if (original.sessionUserIdAtStart !== sessionUserId) return Promise.reject(new Error('Yêu cầu thuộc phiên đăng nhập trước. Vui lòng thực hiện lại.'));
-    try { await refreshSession(); }
-    catch (refreshError) {
-      if (isSessionRejected(refreshError)) { await clearSession(); expired(); }
-      return Promise.reject(refreshError);
-    }
+    // Another request may have refreshed while this older 401 was in flight.
+    if (!accessToken || original.headers.Authorization === `Bearer ${accessToken}`) await refreshSession();
     if (original.sessionUserIdAtStart !== sessionUserId) return Promise.reject(new Error('Phiên đăng nhập đã thay đổi. Vui lòng thực hiện lại.'));
     return client(original);
   }

@@ -1,0 +1,7 @@
+# Product-card cart feedback
+
+- Shared ProductCard now replaces its cart icon with ActivityIndicator while the add mutation is pending, exposes busy/disabled semantics and prevents repeated taps. After completion, ShoppingCart returns; success no longer leaves a checkmark or inline text.
+- Add POST success invalidates the cart cache in the background and publishes screen-level feedback immediately. Stock/variant/quantity payloads, guest login redirects and service consultation remain unchanged. Add/favorite errors also use top feedback instead of changing card height.
+- Added ephemeral `useToast` state and one `GlobalToastHost` under the root SafeAreaProvider. Reuses TopToast's slide/fade and auto-dismiss with a new error tone. New messages replace old ones; dismissal IDs prevent stale callbacks from clearing a newer toast. Existing local TopToast callers keep their default success presentation.
+- Verification: 199 frontend tests across 44 files, TypeScript and full ESLint passed. Pending/success/error card states, cart payload/cache invalidation, favorites and stale-toast dismissal are covered by tests.
+- Browser preview checked success/error tones, placement and auto-dismiss on desktop and 390px mobile. The card's 310.76px mobile height and position stayed unchanged across feedback, with no overflow or console warnings. Preview used synthetic messages/products; it did not submit an authenticated cart request. Temporary route removed.

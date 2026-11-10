@@ -27,7 +27,8 @@
     "plugins": [
       "expo-router",
       "expo-image",
-      "expo-secure-store"
+      "expo-secure-store",
+      ["expo-image-picker", { "photosPermission": "Cho phép chọn ảnh đại diện và ảnh bìa từ thư viện ảnh.", "cameraPermission": false, "microphonePermission": false }]
     ],
     "scheme": "bcobca"
   }

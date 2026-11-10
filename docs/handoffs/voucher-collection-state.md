@@ -1,0 +1,7 @@
+# Voucher collection state
+
+- Claim processing is tracked per voucher ID using mutation onMutate/onSettled. Only the requested cards show processing/disable their action. Different vouchers can be claimed concurrently without replacing each other's pending state; modal pending state follows the selected voucher.
+- On success, update only that voucher's claimed flag across the current user's infinite voucher cache before refetching. Membership/points invalidation stays intact. Successful unrelated claims do not close another voucher's detail/redemption modal.
+- Claimed card actions show **Đã thu thập**, remain disabled and cannot re-claim or auto-copy. Preserve original level/member/flash tags and colors; never replace them with an upper-right Đã nhận tag. Redemption cards preserve their pre-claim badge visibility as well.
+- Copying remains available only when explicitly opening a collected voucher's details. Clipboard errors are visible inside the modal. Collection confirmation no longer prompts immediate copy.
+- Verified: six rendering regressions reproduced the original collected-label/tag defects, then passed. Full frontend suite 153 passed; TypeScript, targeted lint and web export passed. Local browser fixtures with delayed responses proved one pending card leaves other actions unchanged, two concurrent pending claims remain isolated, success preserves member/level tags and no card copy action, and mobile width390 has no overflow. No production vouchers were claimed or points spent.

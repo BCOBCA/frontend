@@ -1,0 +1,8 @@
+# Product seller card
+
+- `ProductSellerCard` replaces the product sidebar store description/phone block with the supplied reference layout: circular logo, real store name, conditional verification badge, rating/product-count columns, outlined “Xem gian hàng” and solid red “Theo dõi”. Join date is omitted.
+- Uses existing `product.sellers` links, public dealer detail (`['dealer', slug, userId]`) and `/dealers/{id}/products?pageSize=1` total count. No backend or DB changes required for this layout. Unknown counts show `—`, including failures; zero is displayed only when returned by the API.
+- No store review/rating API exists. Rating displays “Chưa có” with an unfilled star; no fabricated score or manufacturer authorization badge. Verified stores display “Cửa hàng đã xác minh”.
+- Reuses `FollowButton` with an optional `solid` appearance; existing dealer cards retain their default style. Existing authentication, pending state, error handling, follow/unfollow endpoint and query invalidation are preserved. Store navigation goes directly to `/dai-ly/{slug}?tab=products`.
+- Multiple actual linked sellers remain separate cards. Service provider cards are unchanged.
+- Verification: 145 frontend tests passed, TypeScript, lint and web export passed. New rendering tests cover actual/zero/loading counts, verification, follow/pending states, no join date and no invented score. Browser checked against real public API at 1440 px and 390 px; store navigation opens the correct products tab, with no horizontal page overflow at 390 px. A local read-only proxy prevents online follow mutations during visual checks.

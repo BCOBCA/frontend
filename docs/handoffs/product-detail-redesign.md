@@ -1,0 +1,12 @@
+# Product detail reference redesign
+
+- Rebuilt `app/product/[id].tsx` around the supplied commerce reference using existing native components and red/white tokens: breadcrumb, gallery/purchase panel, desktop brand/related sidebar, information/specification/review tabs and review section.
+- Desktop at 1100px+ shows the sidebar; the hero splits at 780px. Smaller layouts stack. Gallery thumbnails form a vertical rail on desktop and a horizontal strip on mobile; arrows, paging, page count and image enlargement remain functional.
+- Product options, quantity, favorite/cart actions, login/product/affiliate redirects and service consultation are preserved. Quantity is bounded by available stock and 999. Variant changes reset quantity to one. Existing product/brand/variant data drives prices, discount savings, availability and specification rows.
+- Buy now uses `services/product-purchase.ts`: creates/updates only the requested SKU to the chosen quantity, unselects other cart rows without deleting them, verifies the final selection and navigates to checkout. No order/payment is created by the product page. Cart cache is refreshed on success and error.
+- Brand information comes from the public brand endpoint. Related items come from the same brand and reuse `ProductCard` with a compact presentation; current product is excluded. Services keep consultation and do not show product review/related sections.
+- Review statistics are calculated only when the complete review dataset is present on page one. No invented official badges, ratings, sales, follower counts, flash-sale timers or merchant warranty promises were introduced. Review writing links to orders, where purchased-item reviews already exist.
+- New components: `ProductDetailInfo.tsx`, `ProductDetailSidebar.tsx`. Existing gallery, variant selector, product card and reviews were adapted with optional props so other consumers retain their normal presentation.
+- Validation: full frontend suite passed 134 tests; final focused purchase/gallery/card tests passed 11 cases, including the newly added invalid-quantity test (135 unique tests total). Typecheck, Expo lint and web export passed.
+- Browser checked using actual Samsung Galaxy S10 public data via a local GET-only preview proxy: desktop 1440px layout, 128GB selection and matching SKU, quantity two, specification/review tabs and enlarged-image modal. Mobile 390px shows all five thumbnails and purchase controls without horizontal overflow.
+- No backend/database changes, deployment or commit was part of this redesign.

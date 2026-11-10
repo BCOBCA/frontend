@@ -1,0 +1,10 @@
+# Brand discovery
+
+- Correction: `/categories` now uses the separate category grid and product-category filtering. The brand directory/cover grid below applies to home and `/brands`; see `category-tab.md`.
+
+- `BrandCoverGrid` renders the reference six brands (ASUS, Apple, Dell, HP, LG, Lenovo) using actual `coverUrl` images: three desktop columns, two mobile columns, 4.3:1 ratio. Grid widths use measured layout to account for gaps.
+- `BrandExplorer` replaces the horizontal brand strip on catalog/home and is reused on `/brands`: accent/case/apostrophe-insensitive search, All/A–Z filters, twelve initial items, reveal twelve more, six desktop/four tablet/three phone logo columns. Catalog selection retains product/service filtering and resets pagination; `/brands` selections navigate to brand details. Brand sources currently request the existing API maximum page size of 100.
+- Cloudinary logos use `e_trim:10` to remove large embedded margins without changing stored logo URLs. Existing other image hosts remain unchanged.
+- Neon: replaced all twenty `Brands.CoverUrl` values with verified 1200×280 pastel wave banners containing the matching brand logo and product. New Cloudinary public IDs end in `product-cover-v2`; previous assets remain available. Previous URLs and temporary asset scripts are in workspace `.local/catalog-import/cover-url-backup.json` and `.local/catalog-import/product-covers.py` (ignored by Git). Ownership, reward rules, contacts and other DB fields are unchanged.
+- Verification: 56 frontend tests, TypeScript, ESLint. Chrome inspected desktop/mobile covers and directory; verified search `nestle` → Nestlé, combined search/letter empty state, L → Lenovo/LG/L’Oréal, reveal 12 → 20, no page overflow at inspected widths and no console errors/warnings. No physical native-device run.
+- Sources: product image provenance is saved in `.local/catalog-import/product-sources.json`; logo trimming follows https://cloudinary.com/documentation/transformation_reference#e_trim.

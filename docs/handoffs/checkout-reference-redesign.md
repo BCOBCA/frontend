@@ -1,0 +1,11 @@
+# Checkout reference redesign
+
+- `app/checkout.tsx` delegates presentation to `src/components/checkout/CheckoutView.tsx`; retains server order preview, COD payload, affiliate attribution, idempotency key and order-request recovery. Existing Header retained; mobile footer uses `footerTab="cart"`.
+- Full-width recipient strip, inline address selector/add action, selected products grouped by actual store, shipping/voucher/COD/note rows and payment summary. Desktop uses two columns at 1000px; narrow layouts stack. Notes capped at 200 characters per reference.
+- Voucher action opens manual code entry with apply/remove. No new voucher/payment/shipping APIs; COD details show the only supported method. Preview controls all totals including separate shipping discounts. Product rows show unit price and quantity.
+- `CheckoutAddress` resolves province/ward display names through the same cached public location queries as the address list; saved values stay unchanged.
+- Order blocked during pending/loading/refetch, data/preview errors, missing preview/recipient/selection and invalid stock. Data retry clears the previous mutation error to allow retry with the same idempotency key.
+- Verification: full suite 233 tests/48 files; 17 checkout tests cover selection/rendering, monetary lines, notes, order guards, payload and unknown-result recovery. TypeScript and ESLint. Browser synthetic fixtures: desktop screenshot, 390px and 320px without horizontal overflow and visible header/footer; changed recipient, applied/removed code, typed note and checked count; no console warnings/errors. Temporary fixture removed.
+- Limits: no real order or authenticated checkout mutation executed; server contracts covered using API mocks.
+
+- Note field follow-up: `CheckoutNoteField` uses matching, accessibility-hidden text in normal layout to size the overlaid multiline input. Grows/shrinks for explicit line breaks, soft wrapping and width changes; retains 200-character limit and pending lock. Browser verified 30px empty → 120px six lines → 30px cleared, and 100px wrapped content at 320px without inner clipping/horizontal overflow. Checkout tests (14), TypeScript and targeted lint passed; temporary fixture removed.
