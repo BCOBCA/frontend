@@ -2,6 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Information from '../app/info/[slug]';
+vi.mock('../src/screens/AboutScreen', () => ({ default: () => <main>Báo chí Online BCA</main> }));
 
 const state = vi.hoisted(() => ({ slug: 'affiliate', width: 390, user: null as { id: string } | null, push: vi.fn(), query: vi.fn(), actions: {} as Record<string, () => void>, ranks: [{ rank: 0, name: 'Hạng từ DB', minSuccessfulReferrals: 17, commissionRate: 0.0425 }],
   policy: { approvalStatus: 'DRAFT', version: null as string | null, updatedOn: null as string | null, effectiveOn: null as string | null, approvedOn: null as string | null, attributionDays: null as number | null, approvalHoldDays: 14 },
