@@ -1,5 +1,15 @@
 # BCOBCA Frontend
 
+## Deploy web lên Vercel
+
+Repository này dùng Expo, chọn Framework Preset **Other** trên Vercel. Root Directory là `./` khi import repository frontend riêng. `vercel.json` cấu hình Install Command `npm ci`, Build Command `npm run build`, Output Directory `dist` và rewrite cho Expo Router ở chế độ SPA (`web.output: single`).
+
+Đặt `EXPO_PUBLIC_API_BASE_URL` thành URL HTTPS của backend, gồm đuôi `/api`, trong Environment Variables của môi trường cần deploy. Sau khi thay biến môi trường, cần build/deploy lại.
+
+Nếu gặp `[STATIC_BUILD_NO_OUT_DIR] No Output Directory named "build"`, đổi Output Directory từ `build` sang `dist` và Framework Preset từ Preact sang Other, rồi redeploy. Nếu dùng cấu hình trong repo, commit/push `vercel.json` và deploy commit mới. File này ghi đè thiết lập build/output của dashboard. Refresh trực tiếp các đường dẫn như `/checkout` được đưa về SPA qua rewrite.
+
+Tài liệu: [Expo trên Vercel](https://docs.expo.dev/guides/publishing-websites/#vercel), [Vercel project configuration](https://vercel.com/docs/project-configuration/vercel-json).
+
 React Native + Expo SDK 58, Expo Router, TypeScript; dùng chung Android, iOS và Web. Repository: https://github.com/BCOBCA/frontend. API: https://github.com/BCOBCA/backend.
 
 ## Chạy độc lập
