@@ -1,0 +1,6 @@
+# Login sessions table
+
+- `/sessions` uses `SessionsTable`: index, device name, creation/login time, expiration time and compact per-row revoke controls. Displays only fields provided by the API; no inferred IP/location/current-device status.
+- Shared page/back/member footer and authenticated login/loading/error states remain. Empty state is inside the table. GET `/auth/sessions` cache is scoped by account ID; DELETE `/auth/sessions/{encodedId}` retains the existing contract. Actions are disabled while revoking/refetching or when list fetching fails; success awaits a list refresh.
+- The table fills the measured viewport on desktop and has a 760px minimum with internal horizontal scrolling on phones. Long names wrap within their column. Explanatory mobile scroll hint, table/row/cell roles and individually labeled 36px controls with extended touch targets.
+- Validation: all 309 frontend tests and web export passed. Six focused table/route tests, TypeScript and targeted uncached ESLint passed after the width adjustment. Browser verified desktop/375px without body overflow or console errors; mobile content scrolls inside its 342px viewport, and a fixture revoke selected the expected row. No actual login sessions revoked, no backend changes or deployments.

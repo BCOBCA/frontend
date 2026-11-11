@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { Bell, CalendarDays, Camera, LockKeyhole, MonitorSmartphone, ShieldCheck, Store, UserRound } from 'lucide-react-native';
+import { CalendarDays, Camera, LockKeyhole, MonitorSmartphone, ShieldCheck, UserRound } from 'lucide-react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import type { Profile } from '../../types/api';
 import { colors } from '../../theme';
@@ -22,8 +22,6 @@ export function ProfileIdentity({ user, tab, onTab, onImage, imageBusy, compact 
     { label: 'Xác minh số điện thoại', Icon: ShieldCheck, selected: tab === 'verification', action: () => onTab('verification') },
     { label: 'Đổi mật khẩu', Icon: LockKeyhole, action: () => router.push('/change-password') },
     { label: 'Thiết bị đăng nhập', Icon: MonitorSmartphone, action: () => router.push('/sessions') },
-    { label: 'Thông báo', Icon: Bell, action: () => router.push('/notifications') },
-    { label: 'Hồ sơ đại lý', Icon: Store, action: () => router.push('/dealer-profile') },
   ];
   const navigation = menus.map(({ label, Icon, selected, action }) => <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: !!selected }} onPress={action} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 46, paddingHorizontal: 11, borderRadius: 9, backgroundColor: selected ? '#FFE7E9' : pressed ? '#F5F6F8' : 'transparent' })}><Icon size={20} strokeWidth={1.7} color={selected ? colors.primary : colors.text} /><Text numberOfLines={1} style={{ fontSize: 12, lineHeight: 18, fontWeight: '600', color: selected ? colors.primary : colors.text, flex: compact ? undefined : 1 }}>{label}</Text></Pressable>);
   return <View style={{ backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.border, overflow: 'hidden', boxShadow: '0 5px 22px #20283C08' }}>

@@ -14,8 +14,8 @@ import { request } from '../../src/services/api';
 import { useAuth } from '../../src/stores/auth';
 import type { Membership } from '../../src/types/api';
 
-const menu = [ ['Đơn hàng từ bảng báo giá', ReceiptText, '/quotations'], ['Danh sách giới thiệu người mới', UsersRound, '/referrals'], ['Bảng xếp hạng lượt giới thiệu', Medal, '/leaderboard'], ['Chính sách Affiliate', FileText, '/info/affiliate'], ['Cá nhân', UserRound, '/profile'], ['Sản phẩm yêu thích', Heart, '/favorites'], ['Phản hồi', MessageSquare, '/feedback'], ['Danh sách địa chỉ', MapPin, '/addresses'], ['Về chúng tôi', Info, '/info/about'] ] as const;
-const statuses = [ ['Chờ xác nhận', Clock, 'PENDING'], ['Đã xác nhận', CircleCheck, 'CONFIRMED'], ['Sẵn sàng giao', Package, 'READY'], ['Đang giao', Truck, 'SHIPPING'] ] as const;
+const menu = [ ['Đơn hàng của tôi', ReceiptText, '/orders'], ['Danh sách giới thiệu người mới', UsersRound, '/referrals'], ['Bảng xếp hạng lượt giới thiệu', Medal, '/leaderboard'], ['Chính sách Affiliate', FileText, '/info/affiliate'], ['Cá nhân', UserRound, '/profile'], ['Sản phẩm yêu thích', Heart, '/favorites'], ['Phản hồi và hỗ trợ', MessageSquare, '/feedback'], ['Danh sách địa chỉ', MapPin, '/addresses'], ['Về chúng tôi', Info, '/info/about'] ] as const;
+const statuses = [ ['Chờ xác nhận', Clock, 'PENDING'], ['Chờ giao hàng', Package, 'CONFIRMED'], ['Đang giao', Truck, 'SHIPPING'], ['Hoàn thành', CircleCheck, 'COMPLETED'] ] as const;
 export default function Member() {
   const { width } = useWindowDimensions();
   const webOrders = Platform.OS === 'web' && width >= 768;
