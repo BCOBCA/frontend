@@ -15,12 +15,16 @@ export type Voucher = { id: string; code: string; name: string; description: str
 export type CartItem = { id: string; productId: string; variantId: string; brandId: string; brandName: string; name: string; variantName: string; imageUrl: string; unitPrice: number; quantity: number; availableStock: number; isSelected: boolean; isAvailable: boolean; storeId?: string | null; storeName?: string | null };
 export type Cart = { items: CartItem[]; selectedTotal: number; selectedCount: number };
 export type Address = { id: string; recipientName: string; phone: string; provinceCode: string; wardCode: string; addressLine: string; isDefault: boolean };
-export type OrderSummary = { id: string; orderCode: string; status: string; paymentStatus: string; totalAmount: number; createdAt: string };
-export type Order = OrderSummary & { subtotal: number; discountAmount: number; shippingFee: number; shippingDiscountAmount?: number; recipientName: string; recipientPhone: string; shippingAddress: string; items: { id: string; productName: string; quantity: number; unitPrice: number; totalPrice: number }[]; shipments: { id: string; carrier: string; trackingCode: string; status: string; shippedAt: string | null; deliveredAt: string | null }[]; history: { oldStatus: string; newStatus: string; note: string; createdAt: string }[] };
-export type CheckoutVoucher = { id: string; code: string; name: string; description: string; discountType: string; discountValue: number; maxDiscount: number | null; minOrderAmount: number; expiresAt: string; discountAmount: number; isEligible: boolean; reason: string | null };
-export type CheckoutPreview = { subtotal: number; discountAmount: number; shippingFee: number; shippingDiscountAmount?: number; totalAmount: number; selectedCount: number; cartHash: string; vouchers?: CheckoutVoucher[]; appliedVoucherCodes?: string[] };
+export type OrderSummary = { id: string; orderCode: string; status: string; paymentStatus: string; totalAmount: number; createdAt: string; storeName?: string | null; items?: OrderItem[] | null };
+export type OrderItem = { id: string; productName: string; quantity: number; unitPrice: number; totalPrice: number; productId?: string; brandId?: string; brandName?: string | null; sku?: string; discountAmount?: number; storeId?: string | null; storeName?: string | null; storeSlug?: string | null; imageUrl?: string | null; variantName?: string | null };
+export type Order = OrderSummary & { checkoutGroupId?: string | null; checkoutOrders?: OrderSummary[]; subtotal: number; discountAmount: number; shippingFee: number; shippingDiscountAmount?: number; paymentMethod?: string | null; recipientName: string; recipientPhone: string; shippingAddress: string; items: OrderItem[]; shipments: { id: string; carrier: string; trackingCode: string; status: string; shippedAt: string | null; deliveredAt: string | null }[]; history: { oldStatus: string; newStatus: string; note: string; createdAt: string }[] };
+export type CheckoutVoucher = { id: string; code: string; name: string; description: string; discountType: string; discountValue: number; maxDiscount: number | null; minOrderAmount: number; expiresAt: string; discountAmount: number; isEligible: boolean; reason: string | null; storeId?: string | null; appliedStoreId?: string | null };
+export type CheckoutPreview = { subtotal: number; discountAmount: number; shippingFee: number; shippingDiscountAmount?: number; totalAmount: number; selectedCount: number; cartHash: string; vouchers?: CheckoutVoucher[]; appliedVoucherCodes?: string[]; storeOrders?: CheckoutStoreOrder[]; shopDiscountAmount?: number; platformDiscountAmount?: number; pricingPolicy?: string };
 export type Point = { id: string; type: string; points: number; balanceAfter: number; description: string; createdAt: string };
 export type AffiliateRank = { rank: number; name: string; minSuccessfulReferrals: number; commissionRate: number };
+export type LeaderboardPeriod = 'week' | 'month' | 'quarter' | 'all';
+export type LeaderboardEntry = { id: string; displayName: string; referrals: number; rank: number; tier?: string; commissionRate?: number; avatarUrl?: string; tierRank?: number; isMe?: boolean };
+export type LeaderboardPage = Page<LeaderboardEntry> & { period?: LeaderboardPeriod; myEntry?: LeaderboardEntry | null };
 export type AffiliatePolicy = {
   approvalStatus: 'DRAFT' | 'APPROVED'; version: string | null;
   updatedOn: string | null; effectiveOn: string | null; approvedOn: string | null;
@@ -36,3 +40,5 @@ export type Referral = { id: string; fullName: string; status: string; createdAt
 export type Article = { id: string; title: string; summary: string; content: string; thumbnailUrl: string; publishedAt: string | null };
 export type Notification = { id: string; title: string; body: string; readAt: string | null; createdAt: string };
 export type Quotation = { id: string; quoteCode: string; amount: number; description: string; validUntil: string; status: string };
+
+export type CheckoutStoreOrder = { storeId: string; storeName: string; subtotal: number; discountAmount: number; shippingFee: number; shippingDiscountAmount: number; totalAmount: number; shopDiscountAmount?: number; platformDiscountAmount?: number; shopVoucherCode?: string | null; expectedDeliveryAt?: string | null };

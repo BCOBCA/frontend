@@ -16,7 +16,7 @@ export function Button({ title, onPress, disabled, outline, black }: { title: st
     <Text style={{ color: outline ? colors.primary : colors.surface, fontSize: 14, lineHeight: 20, fontWeight: '600' }}>{title}</Text>
   </Pressable>;
 }
-export function Page({ children, title, back, search, onSearch, onSubmitSearch, header = true, bodyStyle, overlay, footerTab }: PropsWithChildren<{ title?: string; back?: boolean; search?: string; onSearch?: (value: string) => void; onSubmitSearch?: (value: string) => void; header?: boolean; bodyStyle?: ViewStyle; overlay?: ReactNode; footerTab?: (typeof primaryTabs)[number]['name'] }>) {
+export function Page({ children, title, back, search, onSearch, onSubmitSearch, header = true, bodyStyle, overlay, footerTab, footer }: PropsWithChildren<{ title?: string; back?: boolean; search?: string; onSearch?: (value: string) => void; onSubmitSearch?: (value: string) => void; header?: boolean; bodyStyle?: ViewStyle; overlay?: ReactNode; footer?: ReactNode; footerTab?: (typeof primaryTabs)[number]['name'] }>) {
   const insets = useSafeAreaInsets();
   const segments = useSegments();
   const { width } = useWindowDimensions();
@@ -27,6 +27,7 @@ export function Page({ children, title, back, search, onSearch, onSubmitSearch, 
     <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1, backgroundColor: colors.background }} keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, paddingBottom: segments.includes('(tabs)') || showFooter ? 0 : insets.bottom }}>
       <View style={[s.container, bodyStyle]}>{children}</View>
     </ScrollView>
+    {footer && <View style={{ backgroundColor: colors.surface, paddingBottom: insets.bottom }}>{footer}</View>}
     {showFooter && footerTab && <PrimaryTabFooter activeTab={footerTab} bottomInset={insets.bottom} />}
     {overlay}
   </SafeAreaView>;

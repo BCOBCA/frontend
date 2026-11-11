@@ -23,11 +23,22 @@ function props(overrides: Partial<CheckoutViewProps> = {}): CheckoutViewProps {
 beforeEach(() => { state.actions = {}; state.width = 1100; });
 it('renders selected products by vendor with server totals and shipping discount', () => {
   const html = renderToStaticMarkup(<CheckoutView {...props({ cart: { items: [line(), line({ id: 'hidden', name: 'Không chọn', isSelected: false })], selectedCount: 3, selectedTotal: 9000000 } })} />);
-  for (const text of ['Phong Vũ', 'AirPods', 'Trắng', 'x3', '9.000.000 VNĐ', '8.910.000 VNĐ', 'Giảm phí vận chuyển', 'Chi tiết thanh toán']) expect(html).toContain(text);
+  for (const text of ['Phong Vũ', 'AirPods', 'Trắng', 'x3', '9.000.000 VNĐ', '8.910.000 VNĐ', 'Giảm phí vận chuyển', 'Tóm tắt thanh toán']) expect(html).toContain(text);
   expect(html).not.toContain('Không chọn');
 });
 it('places an eligible order through the existing callback', () => {
   const p = props(); renderToStaticMarkup(<CheckoutView {...p} />); state.actions['Đặt hàng'](); expect(p.onOrder).toHaveBeenCalledOnce();
+});
+it('shows compact shipping and voucher rows for each shop with one combined summary', () => {
+  const p = props();
+  p.cart!.items.push(line({ id: 'second', storeId: 's2', storeName: 'Shop B' }));
+  p.preview!.storeOrders = [
+    { storeId: 's', storeName: 'Phong Vũ', subtotal: 100000, discountAmount: 10000, shippingFee: 5000, shippingDiscountAmount: 1000, totalAmount: 94000 },
+    { storeId: 's2', storeName: 'Shop B', subtotal: 200000, discountAmount: 20000, shippingFee: 10000, shippingDiscountAmount: 2000, totalAmount: 188000 },
+  ];
+  const html = renderToStaticMarkup(<CheckoutView {...p} />);
+  for (const text of ['2 đơn hàng', '4.000 VNĐ', '8.000 VNĐ', '8.910.000 VNĐ', 'Voucher của shop', 'Giảm giá từ sàn']) expect(html).toContain(text);
+  expect(html).not.toContain('Thanh toán cho cửa hàng');
 });
 it.each(['busy', 'loading', 'refreshing', 'previewLoading', 'error', 'previewError', 'missingPreview', 'noAddress', 'noSelection', 'stock'])('blocks orders for %s', mode => {
   const p = props();

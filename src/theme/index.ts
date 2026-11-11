@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 export const colors = { primary: '#DF403B', background: '#F3F3F7', surface: '#FFFFFF', text: '#24242B', muted: '#777985', border: '#E8E8ED', disabled: '#E4E4E9', gold: '#F6CC53', member: '#D1D7DB', black: '#000000' };
-export const money = (amount: number) => `${new Intl.NumberFormat('vi-VN').format(amount)} VNĐ`;
+export const money = (amount: number) => `${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(amount)} VNĐ`;
 export const dateTime = (value: string) => new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date(value));
 export const styles = StyleSheet.create({
   fill: { flex: 1 }, page: { flex: 1, backgroundColor: colors.background }, container: { width: '100%', maxWidth: 1180, alignSelf: 'center' },

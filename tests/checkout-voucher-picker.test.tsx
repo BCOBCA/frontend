@@ -12,9 +12,15 @@ vi.mock('lucide-react-native', () => ({ Circle: () => null, CircleCheck: () => n
 vi.mock('../src/components/common/ui', () => ({ Status: () => null }));
 beforeEach(() => { state.actions = {}; });
 const voucher = (code: string, discountType = 'FIXED', isEligible = true): CheckoutVoucher => ({ id: code, code, name: code, description: '', discountType, discountValue: 100000, maxDiscount: 100000, minOrderAmount: 100000, expiresAt: '2027-01-01', discountAmount: 100000, isEligible, reason: isEligible ? null : 'Voucher đã hết hạn' });
+it('shows only the selected store scope and preserves independent selection callbacks', () => {
+  const onSelect = vi.fn();
+  const html = renderToStaticMarkup(<CheckoutVoucherPicker category="store:a" vouchers={[{ ...voucher('SHOP-A'), storeId: 'a' }, { ...voucher('SHOP-B'), storeId: 'b' }, voucher('PLATFORM')]} selectedCodes={[]} onSelect={onSelect} onAuto={vi.fn()} />);
+  expect(html).toContain('SHOP-A'); expect(html).not.toContain('SHOP-B'); expect(html).not.toContain('PLATFORM');
+  state.actions['Chọn voucher SHOP-A'](); expect(onSelect).toHaveBeenCalledWith('store:a', 'SHOP-A');
+});
 it('shows both categories, actual savings, selected counts and unavailable reasons', () => {
   const html = renderToStaticMarkup(<CheckoutVoucherPicker vouchers={[voucher('SAVE'), voucher('SHIP', 'SHIPPING'), voucher('EXPIRED', 'FIXED', false)]} selectedCodes={['SAVE', 'SHIP']} onSelect={vi.fn()} onAuto={vi.fn()} />);
-  for (const text of ['Voucher sản phẩm', 'Voucher vận chuyển', 'SAVE', 'SHIP', '100.000 VNĐ', 'Voucher đã hết hạn', '1/1']) expect(html).toContain(text);
+  for (const text of ['Voucher sàn', 'Voucher vận chuyển', 'SAVE', 'SHIP', '100.000 VNĐ', 'Voucher đã hết hạn', '1/1']) expect(html).toContain(text);
   expect(state.actions['Chọn voucher EXPIRED']).toBeUndefined();
 });
 it('changes only the requested category and exposes an explicit automatic selection action', () => {

@@ -36,7 +36,6 @@ Expo Router source files; all screens share the React Native API client.
 | `frontend/app/quotations.tsx` |
 | `frontend/app/referrals.tsx` |
 | `frontend/app/refund/[id].tsx` |
-| `frontend/app/refunds.tsx` |
 | `frontend/app/register.tsx` |
 | `frontend/app/reset-password.tsx` |
 | `frontend/app/review/[id].tsx` |
