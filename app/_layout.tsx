@@ -6,7 +6,8 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, AppState, Platform, Text, View } from 'react-native';
 import { Button } from '../src/components/common/ui';
 import { GlobalToastHost } from '../src/components/common/GlobalToastHost';
-import { errorMessage } from '../src/services/api';
+import { ensureFreshSession, errorMessage } from '../src/services/api';
+import { startSessionMaintenance } from '../src/services/session-maintenance';
 import { colors } from '../src/theme';
 import { queryClient, useAuth } from '../src/stores/auth';
 
@@ -17,6 +18,10 @@ export default function RootLayout() {
   const restoring = useAuth(s => s.restoring);
   const restoreError = useAuth(s => s.restoreError);
   useEffect(() => { void restore(); }, [restore]);
+  const userId = user?.id;
+  useEffect(() => {
+    if (ready && userId) return startSessionMaintenance(ensureFreshSession);
+  }, [ready, userId]);
   useEffect(() => {
     const retryRecovery = () => { if (useAuth.getState().restoreError) void restore(); };
     if (Platform.OS === 'web') {
