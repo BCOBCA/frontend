@@ -1,5 +1,7 @@
 # Feedback and support center
 
+Attachment behavior below is superseded by [support-attachments.md](support-attachments.md): the URL field now uses a device file picker and authenticated upload API.
+
 - `/feedback` redesigned with pink SVG headset banner, quick contact/history cards, topic request form, expandable FAQ and suggestion CTA. Shared header/back/member footer remain. Public FAQs/contact are visible to guests; submitting/suggesting requires login.
 - User confirmed public support email `mxh@baochi.online`; copy and mailto actions include failure feedback. No live chat or response-time claim. History goes to existing `/feedback-history`; FAQ links use existing orders/profile/Affiliate policy routes.
 - `feedbackSchema` validates known topic, 5–1000 trimmed content characters, optional HTTP(S) URL up to 2048 characters without embedded credentials. Suggestion topic uses FEEDBACK; other topics use SUPPORT. Optional illustration URL is appended to content and sent through the existing POST `/feedbacks`. No file uploads are implied; UI explicitly requests a link to an image/document. No backend/schema/dependency changes.

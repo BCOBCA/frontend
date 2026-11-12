@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, expect, it, vi } from 'vitest';
 import Feedback from '../app/feedback';
 import type { FeedbackValues } from '../src/services/feedback';
+vi.mock('../src/components/support/support-attachments',()=>({pickSupportAttachment:vi.fn(),uploadSupportAttachment:vi.fn()}));
 const state=vi.hoisted(()=>({user:{id:'me'} as {id:string}|null,request:vi.fn(),invalidate:vi.fn(),resetForm:vi.fn(),resetMutation:vi.fn(),setValue:vi.fn(),mutate:vi.fn(),push:vi.fn(),copy:vi.fn().mockResolvedValue(true),openURL:vi.fn().mockResolvedValue(true),values:{subject:'Đơn hàng và thanh toán',content:'Tôi cần kiểm tra đơn hàng',reference:''},view:undefined as undefined|{onSuggest:()=>void;onCopyEmail:()=>void;onEmail:()=>void},form:undefined as undefined|{onSubmit:()=>void},mutation:undefined as undefined|{mutationFn:(v:FeedbackValues)=>unknown;onSuccess:()=>Promise<void>}}));
 vi.mock('expo-router',()=>({router:{push:state.push}}));vi.mock('expo-clipboard',()=>({setStringAsync:state.copy}));vi.mock('expo-linking',()=>({openURL:state.openURL}));
 vi.mock('react-native',()=>({TextInput:()=>null}));

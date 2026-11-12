@@ -12,7 +12,7 @@ const questions: { question: string; answer: string; link?: string; route?: Dest
   { question: 'Hoa hồng được tính khi nào?', answer: 'Hoa hồng được ghi nhận theo điều kiện của đơn hàng và chính sách Affiliate. Bạn có thể theo dõi các trạng thái chờ duyệt, đã duyệt và khoản bị thu hồi trong lịch sử hoa hồng; thời hạn đối soát áp dụng theo chính sách hiện hành.', link: 'Tìm hiểu điều kiện ghi nhận', route: '/info/affiliate' },
   { question: 'Tôi theo dõi trạng thái đơn hàng ở đâu?', answer: 'Vào Thành viên → Đơn hàng của tôi. Mỗi đơn có trang chi tiết để xem sản phẩm, tổng thanh toán, địa chỉ nhận và lịch sử cập nhật trạng thái.', link: 'Mở đơn hàng của tôi', route: '/orders' },
   { question: 'Làm sao để thay đổi thông tin tài khoản?', answer: 'Mở Thông tin cá nhân và chọn Chỉnh sửa để cập nhật thông tin của bạn. Các mục đổi mật khẩu và quản lý thiết bị đăng nhập cũng nằm trong khu vực tài khoản.', link: 'Mở thông tin cá nhân', route: '/profile' },
-  { question: 'Tôi gặp lỗi khi đặt hàng, cần hỗ trợ thế nào?', answer: 'Kiểm tra lại sản phẩm đã chọn, địa chỉ nhận và điều kiện của voucher. Nếu vẫn gặp lỗi, hãy gửi yêu cầu với thời điểm xảy ra, nội dung thông báo lỗi và mã đơn nếu đã có. Bạn có thể dán liên kết ảnh hoặc tài liệu minh họa trong form.' },
+  { question: 'Tôi gặp lỗi khi đặt hàng, cần hỗ trợ thế nào?', answer: 'Kiểm tra lại sản phẩm đã chọn, địa chỉ nhận và điều kiện của voucher. Nếu vẫn gặp lỗi, hãy gửi yêu cầu với thời điểm xảy ra, nội dung thông báo lỗi và mã đơn nếu đã có. Bạn có thể chọn ảnh hoặc tài liệu từ thiết bị để đính kèm trong form.' },
 ];
 
 export function FeedbackView({ form, onHistory, onEmail, onCopyEmail, onSuggest, onNavigate }: Props) {
