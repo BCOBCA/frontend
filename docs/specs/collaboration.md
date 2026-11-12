@@ -1,0 +1,13 @@
+# Affiliate collaboration catalog
+
+Implement existing home shortcut /info/collaboration using supplied reference. Preserve /affiliate as wallet/management destination. Desktop: category strip + 4-column catalog left, income/guide/policy/FAQ sidebar right. Phone: 2-column cards, compact wallet summary above catalog, guides below. Use existing Page/Header/member navigation and product design language.
+
+Categories load every API page. The root-category strip supports horizontal touch/trackpad scrolling and left/right controls with disabled edge states so the last category stays reachable. Hide the horizontal scrollbar.
+
+Product cards use the standard catalog card's white background, 1.1 image ratio and name/rating typography. Link icon at upper right replaces cart. Price area shows red `Kiếm …đ` for estimated commission (including zero), above a single row of current price and crossed-out original price. Omit card commission percentage; discount percentage stays only in upper-left badge. Never replace budget-limited estimates with price multiplied by rank on the client.
+
+Create AffiliateProductCard separate from ProductCard. Include real image/name/rating/review count/current sale price/original discounted price, actual discount badge, rank-derived commission rate/estimate and Lấy link. No cart/favorite mutations or fake hot/sold/rating data. Image fallback, keyboard labels, loading/error/empty/paging states. Category/search filter before pagination; 300 ms search debounce. Link action calls existing POST /affiliate/links and copies the returned URL; preserve visible URL/share controls if clipboard fails.
+
+GET /api/affiliate/products (authenticated active affiliate) supplies catalog items with rating/count, effective rate = min(current rank rate, product cap) and approximate one-unit commission using current discounted price, rounded like FinanceService and capped by remaining product budget. Only active eligible products/stores/brands. Use shared catalog variant/image projection and current rank query; batch review/policy/budget reads, avoid per-card network requests. User rank comes from existing GET /affiliate; income uses real pending/available balances. Explain estimates may change with discounts, rank, budget and eligibility. No hardcoded per-product rates.
+
+Plan: backend eligibility/rank/price/budget tests and endpoint; frontend helper/card tests and presentation; route queries/link/copy integration; frontend tests/typecheck/lint/build and backend affiliate-flow regression; desktop/mobile browser fixture. No dependencies, schema migrations, real link creation, real sharing or deployment during verification. Keep unrelated changes.

@@ -38,7 +38,7 @@ describe('affiliate policy route', () => {
   });
   it('opens existing affiliate tools for members', () => {
     state.user = { id: 'member' }; renderToStaticMarkup(<Information />);
-    state.actions['Tham gia ngay'](); expect(state.push).toHaveBeenCalledWith('/affiliate-ranks');
+    state.actions['Tham gia ngay'](); expect(state.push).toHaveBeenCalledWith('/affiliate');
     state.actions['Yêu cầu rút tiền'](); expect(state.push).toHaveBeenCalledWith('/withdrawal');
   });
   it('preserves other info routes', () => {

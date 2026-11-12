@@ -35,7 +35,7 @@ export type AffiliatePolicy = {
   operatorName: string | null; operatorAddress: string | null;
 };
 export type AffiliateRankProgress = { rank: number; name: string; successfulReferrals: number; commissionRate: number; nextRank: string | null; nextRankMinReferrals: number | null; referralsToNextRank: number };
-export type Affiliate = { code: string; availableBalance: number; pendingBalance: number; totalReferrals: number; debtBalance: number; rankInfo?: AffiliateRankProgress | null };
+export type Affiliate = { code: string; availableBalance: number; pendingBalance: number; totalReferrals: number; debtBalance: number; rankInfo?: AffiliateRankProgress | null; totalCommission?: number };
 export type Referral = { id: string; fullName: string; status: string; createdAt: string };
 export type Article = { id: string; title: string; summary: string; content: string; thumbnailUrl: string; publishedAt: string | null };
 export type Notification = { id: string; title: string; body: string; readAt: string | null; createdAt: string };

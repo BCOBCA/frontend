@@ -20,7 +20,7 @@ export default function Leaderboard() {
   const invitation = useQuery({ queryKey: ['affiliate-invitation', user?.id], queryFn: () => request<{ url: string; code: string }>('GET', '/affiliate/invitation'), enabled: !!user });
   return <Page title="Bảng xếp hạng lượt giới thiệu" back footerTab="member">
     {!user ? <LoginNotice /> : <><Status loading={query.isLoading || ranks.isLoading} error={query.error || ranks.error} retry={() => { void query.refetch(); void ranks.refetch(); }} />
-      <LeaderboardView data={query.data} loading={query.isLoading} period={period} ranks={ranks.data ?? []} onPeriod={value => { setPage(1); setPeriod(value); }} onPage={setPage} onDetails={() => router.push('/affiliate-ranks')} onPolicy={() => router.push('/info/affiliate')}
+      <LeaderboardView data={query.data} loading={query.isLoading} period={period} ranks={ranks.data ?? []} onPeriod={value => { setPage(1); setPeriod(value); }} onPage={setPage} onDetails={() => router.push('/info/affiliate')} onPolicy={() => router.push('/info/affiliate')}
         sharing={<><Status loading={invitation.isLoading} error={invitation.error} retry={() => void invitation.refetch()} />{invitation.data?.url && <ShareLinkActions url={invitation.data.url} compact />}</>} />
     </>}
   </Page>;

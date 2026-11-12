@@ -68,7 +68,7 @@ export default function AffiliatePolicyScreen() {
                 <Text accessibilityRole="header" style={{ fontSize: wide ? 26 : 24, lineHeight: 31, color: '#111827', fontWeight: '800' }}>Chương trình <Text style={{ color: '#ED202B' }}>Affiliate</Text></Text>
                 <Text style={{ color: colors.text, fontSize: 14, lineHeight: 20, fontWeight: '700' }}>Giới thiệu sản phẩm – Nhận hoa hồng hấp dẫn</Text>
                 <Text style={{ color: colors.text, fontSize: 11, lineHeight: 16, maxWidth: 340 }}>Kiếm thêm thu nhập bằng cách chia sẻ liên kết sản phẩm đến bạn bè, người theo dõi và cộng đồng của bạn.</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 4 }}><Action title="Tham gia ngay" compact={wide} onPress={() => router.push(user ? '/affiliate-ranks' : '/login')} /><Action title="Xem hướng dẫn" compact={wide} outline onPress={() => goTo('steps')} /></View>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 4 }}><Action title="Tham gia ngay" compact={wide} onPress={() => router.push(user ? '/affiliate' : '/login')} /><Action title="Xem hướng dẫn" compact={wide} outline onPress={() => goTo('steps')} /></View>
               </View>
               <View style={wide ? { position: 'absolute', top: 0, right: 0, bottom: 0, width: '43%' } : { width: '100%', height: 180 }}><AffiliatePolicyArt /></View>
             </View>
