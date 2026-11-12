@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Search } from 'lucide-react-native';
 import { Button, Page, Status } from '../components/common/ui';
 import { ProductCard } from '../components/product/ProductCard';
+import { gridItemWidth } from '../components/common/grid-layout';
 import { DealerSelect } from '../components/dealers/DealerFilters';
 import { productSearchFilters, productSearchQuery, searchCategories, searchProducts, type ProductSearchFilters } from '../services/product-search';
 import { useAuth } from '../stores/auth';
@@ -19,9 +20,10 @@ export default function SearchScreen() {
   const categories = useQuery({ queryKey: ['categories'], queryFn: searchCategories });
   const products = useQuery({ queryKey: ['products', 'search', productSearchQuery(filters), userId], queryFn: () => searchProducts(filters) });
   const { width } = useWindowDimensions();
+  const [gridWidth, setGridWidth] = useState(0);
   const gutter = width < 700 ? 16 : 24;
   const columns = width >= 1100 ? 6 : width >= 768 ? 3 : 2;
-  const cardWidth = (Math.min(width, 1180) - gutter * 2 - (columns - 1) * 12) / columns;
+  const cardWidth = gridItemWidth(gridWidth || Math.min(width, 1180) - gutter * 2, columns, 12);
   const category = categories.data?.items.find(item => item.id === filters.categoryId);
   const update = (patch: Partial<ProductSearchFilters>) => {
     if (patch.search !== undefined) setDraft({ url: patch.search, text: patch.search });
@@ -49,7 +51,7 @@ export default function SearchScreen() {
       <Text style={{ color: colors.muted, fontSize: 13, lineHeight: 20, textAlign: 'center' }}>Thử từ khóa khác hoặc thay đổi danh mục.</Text>
       {!!(filters.search || filters.categoryId) && <Button title="Xem tất cả sản phẩm" onPress={reset} outline />}
     </View>}
-    {!products.error && <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>{products.data?.items.map(item => <ProductCard key={item.id} item={item} width={cardWidth} />)}</View>}
+    {!products.error && <View onLayout={event => setGridWidth(event.nativeEvent.layout.width)} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>{products.data?.items.map(item => <ProductCard key={item.id} item={item} width={cardWidth} />)}</View>}
     {!!products.data && products.data.totalPages > 1 && <View accessibilityLabel="Phân trang kết quả tìm kiếm" style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 16 }}>
       <Button title="Trước" outline disabled={filters.page <= 1} onPress={() => update({ page: filters.page - 1 })} />
       <Text style={{ fontSize: 13, color: colors.muted }}>{filters.page}/{products.data.totalPages}</Text>

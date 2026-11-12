@@ -6,6 +6,7 @@ import { ChevronRight, Crown, Flame, Gift, Percent, Star, TicketPercent, X, Zap 
 import { MemberStar } from '../../src/components/membership/MemberStar';
 import { Page as PageView, Button, Status, Empty } from '../../src/components/common/ui';
 import { OfferCard } from '../../src/components/promotions/OfferCard';
+import { gridItemWidth } from '../../src/components/common/grid-layout';
 import { CheckInPanel } from '../../src/components/promotions/CheckInPanel';
 import { TopToast } from '../../src/components/common/TopToast';
 import { filterOffers, offerRestriction, type OfferCategory } from '../../src/components/promotions/offers';
@@ -25,6 +26,7 @@ const categories = [
 export default function Promotions() {
   const user = useAuth(state => state.user);
   const { width } = useWindowDimensions();
+  const [offerGridWidth, setOfferGridWidth] = useState(0);
   const compactCategories = width < 600;
   const [category, setCategory] = useState<OfferCategory>('all');
   const [selected, setSelected] = useState<{ voucher: Voucher; redeem: boolean } | null>(null);
@@ -53,7 +55,7 @@ export default function Promotions() {
   const free = offers.filter(voucher => !(voucher.pointCost ?? 0));
   const rewards = offers.filter(voucher => (voucher.pointCost ?? 0) > 0);
   const columns = width >= 1000 ? 4 : width >= 700 ? 3 : 2;
-  const cardWidth = (Math.min(width, 1180) - 24 - (columns - 1) * 12) / columns;
+  const cardWidth = gridItemWidth(offerGridWidth || Math.min(width, 1180) - 24, columns, 12);
   const receive = (voucher: Voucher) => {
     if (voucher.claimed || pendingVoucherIds.has(voucher.id)) return;
     setMessage(''); claim.reset();
@@ -61,7 +63,7 @@ export default function Promotions() {
     if ((voucher.pointCost ?? 0) > 0) setSelected({ voucher, redeem: true });
     else claim.mutate(voucher);
   };
-  const cards = (items: Voucher[]) => <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>{items.map(voucher => <OfferCard key={voucher.id} voucher={voucher} width={cardWidth}
+  const cards = (items: Voucher[]) => <View onLayout={event => setOfferGridWidth(event.nativeEvent.layout.width)} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>{items.map(voucher => <OfferCard key={voucher.id} voucher={voucher} width={cardWidth}
     restriction={user && !voucher.claimed ? member.isLoading ? 'Đang tải điểm...' : member.error ? 'Chưa tải được điểm' : offerRestriction(voucher, member.data) : undefined}
     busy={pendingVoucherIds.has(voucher.id)} onClaim={() => receive(voucher)} onDetails={() => { claim.reset(); setSelected({ voucher, redeem: false }); }} />)}</View>;
   return <PageView title="Ưu đãi" overlay={showCheckInToast && <TopToast message="Bạn đã điểm danh hôm nay" onDismiss={dismissCheckInToast} />}>

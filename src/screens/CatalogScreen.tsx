@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Gamepad2, Heart, Newspaper, TicketPercent, MessageSquare, Info, Handshake, Store, Phone } from 'lucide-react-native';
 import { Page as PageView, Section, Empty, Status, Button } from '../components/common/ui';
 import { BannerCarousel } from '../components/common/BannerCarousel';
+import { gridItemWidth } from '../components/common/grid-layout';
 import { ProductCard } from '../components/product/ProductCard';
 import { BrandCoverGrid } from '../components/brands/BrandCoverGrid';
 import { BrandExplorer } from '../components/brands/BrandExplorer';
@@ -31,6 +32,7 @@ export default function CatalogScreen({ home = false }: { home?: boolean }) {
   const [debounced, setDebounced] = useState('');
   const [brand, setBrand] = useState<string>('');
   const [page, setPage] = useState(1);
+  const [productGridWidth, setProductGridWidth] = useState(0);
   const { width } = useWindowDimensions();
   useEffect(() => { const timer = setTimeout(() => { setDebounced(search); setPage(1); }, 350); return () => clearTimeout(timer); }, [search]);
   const brands = useQuery({ queryKey: ['brands'], queryFn: () => request<Page<Brand>>('GET', '/brands?pageSize=100'), enabled: home });
@@ -43,7 +45,7 @@ export default function CatalogScreen({ home = false }: { home?: boolean }) {
   const items = [...(products.data?.items ?? []), ...(services.data?.items ?? [])];
   const columns = width >= 1100 ? 6 : width >= 768 ? 3 : 2;
   const cardGap = width >= 1100 ? 12 : 8;
-  const cardWidth = (Math.min(width, 1180) - 16 - (columns - 1) * cardGap) / columns;
+  const cardWidth = gridItemWidth((productGridWidth || Math.min(width, 1180)) - 16, columns, cardGap);
   const maxPages = Math.max(products.data?.totalPages ?? 1, services.data?.totalPages ?? 1, 1);
   return <PageView>
     {home && <>
@@ -67,7 +69,7 @@ export default function CatalogScreen({ home = false }: { home?: boolean }) {
     </View>}
     {home && <><Status loading={products.isLoading || services.isLoading} error={products.error || services.error} retry={() => { void products.refetch(); void services.refetch(); }} />
     {!products.isLoading && !products.error && !services.isLoading && !services.error && items.length === 0 && <Empty text={search ? 'Không tìm thấy sản phẩm phù hợp' : 'Chưa có sản phẩm hoặc dịch vụ'} />}
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', padding: 8, gap: cardGap }}>{items.map(item => <ProductCard key={`${item.isService}-${item.id}`} item={item} width={cardWidth} />)}</View>
+    <View onLayout={event => setProductGridWidth(event.nativeEvent.layout.width)} style={{ flexDirection: 'row', flexWrap: 'wrap', padding: 8, gap: cardGap }}>{items.map(item => <ProductCard key={`${item.isService}-${item.id}`} item={item} width={cardWidth} />)}</View>
     {maxPages > 1 && <View style={[s.between, { padding: 16 }]}><Button title="Trước" disabled={page === 1} outline onPress={() => setPage(page - 1)} /><Text style={s.body}>{page}/{maxPages}</Text><Button title="Sau" disabled={page >= maxPages} outline onPress={() => setPage(page + 1)} /></View>}</>}
   </PageView>;
 }

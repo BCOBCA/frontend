@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { Check, LayoutGrid } from 'lucide-react-native';
 import type { Category } from '../../types/api';
 import { colors } from '../../theme';
+import { gridItemWidth } from '../common/grid-layout';
 
 const cardBackgrounds = ['#E1F2FF', '#EDE5FF', '#FFF0E2', '#FFEADF', '#FFEAF3', '#FFE4EA', '#FCE6F1', '#F0F7DF', '#F0F8DD', '#E3F2FF'];
 
@@ -19,7 +20,7 @@ export function CategoryGrid({ categories, selectedId, onSelect }: { categories:
       {categories.map((category, index) => {
         const selected = selectedId === category.id;
         return <Pressable key={category.id} accessibilityRole="button" accessibilityLabel={`Danh mục ${category.name}`} accessibilityState={{ selected }} onPress={() => onSelect(category.id)}
-          style={({ pressed }) => ({ width: (availableWidth - (columns - 1) * gap) / columns, aspectRatio: 1.85, minHeight: 100, borderWidth: selected ? 2 : 0, borderColor: colors.primary, backgroundColor: cardBackgrounds[index % cardBackgrounds.length], borderRadius: 15, overflow: 'hidden', opacity: pressed ? 0.8 : 1 })}>
+          style={({ pressed }) => ({ width: gridItemWidth(availableWidth, columns, gap), aspectRatio: 1.85, minHeight: 100, borderWidth: selected ? 2 : 0, borderColor: colors.primary, backgroundColor: cardBackgrounds[index % cardBackgrounds.length], borderRadius: 15, overflow: 'hidden', opacity: pressed ? 0.8 : 1 })}>
           {category.imageUrl ? <Image source={{ uri: category.imageUrl }} style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 }} contentFit="cover" />
             : <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '60%', alignItems: 'center', justifyContent: 'center' }}><LayoutGrid size={36} color={colors.primary} /></View>}
           {selected && <View style={{ position: 'absolute', top: 7, right: 7, width: 22, height: 22, borderRadius: 11, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}><Check size={15} color="#FFFFFF" strokeWidth={2.5} /></View>}

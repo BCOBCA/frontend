@@ -5,6 +5,7 @@ import { ChevronDown, LayoutGrid, Search, X } from 'lucide-react-native';
 import type { Brand } from '../../types/api';
 import { colors } from '../../theme';
 import { brandLogoUrl, filterBrands } from './brand-discovery';
+import { gridItemWidth } from '../common/grid-layout';
 
 const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
@@ -40,7 +41,7 @@ export function BrandExplorer({ brands, selectedId, onSelect, onClear }: {
     </View>
     {!!selected && onClear && <Pressable accessibilityRole="button" accessibilityLabel={`Bỏ lọc ${selected.name}`} onPress={onClear} style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 6, minHeight: 36, paddingHorizontal: 10, borderRadius: 10, backgroundColor: '#FFF0F0' }}><Text style={{ color: colors.primary, fontSize: 12 }}>Đang xem: {selected.name}</Text><X size={14} color={colors.primary} /></Pressable>}
     <View onLayout={event => setGridWidth(event.nativeEvent.layout.width)} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{filtered.slice(0, visible).map(brand => <Pressable key={brand.id} accessibilityRole="button" accessibilityLabel={`Chọn thương hiệu ${brand.name}`} accessibilityState={{ selected: brand.id === selectedId }} onPress={() => onSelect(brand)}
-      style={({ pressed }) => ({ width: gridWidth ? (gridWidth - (columns - 1) * 8) / columns : `${100 / columns}%`, minHeight: mobile ? 68 : 92, alignItems: 'center', justifyContent: 'center', gap: mobile ? 4 : 6, padding: mobile ? 6 : 8, borderWidth: 1, borderColor: selectedId === brand.id ? colors.primary : '#EBEAF1', backgroundColor: selectedId === brand.id ? '#FFF4F4' : '#FFFFFF', borderRadius: mobile ? 10 : 12, opacity: pressed ? 0.8 : 1 })}>
+      style={({ pressed }) => ({ width: gridWidth ? gridItemWidth(gridWidth, columns, 8) : `${100 / columns}%`, minHeight: mobile ? 68 : 92, alignItems: 'center', justifyContent: 'center', gap: mobile ? 4 : 6, padding: mobile ? 6 : 8, borderWidth: 1, borderColor: selectedId === brand.id ? colors.primary : '#EBEAF1', backgroundColor: selectedId === brand.id ? '#FFF4F4' : '#FFFFFF', borderRadius: mobile ? 10 : 12, opacity: pressed ? 0.8 : 1 })}>
       {brand.logoUrl ? <Image source={{ uri: brandLogoUrl(brand.logoUrl) }} style={{ width: mobile ? '76%' : '85%', maxWidth: 120, height: mobile ? 28 : 42 }} contentFit="contain" /> : <View style={{ height: mobile ? 28 : 42, justifyContent: 'center' }}><Text style={{ fontWeight: '700', color: '#34384A' }}>{brand.name.slice(0, 2)}</Text></View>}
       <Text numberOfLines={1} style={{ color: '#25293B', fontSize: mobile ? 11 : 13, lineHeight: mobile ? 16 : 18 }}>{brand.name}</Text>
     </Pressable>)}</View>

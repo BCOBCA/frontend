@@ -23,6 +23,8 @@ describe('brand product listings', () => {
     expect(html.match(/<article/g)).toHaveLength(2);
     expect(html).toContain('data-service="false"');
     expect(html).toContain('data-service="true"');
-    expect(html).toContain('data-width="177"');
+    const widths = [...html.matchAll(/data-width="(\d+)"/g)].map(match => Number(match[1]));
+    expect(widths).toHaveLength(2);
+    expect(widths[0] + widths[1] + 12).toBeLessThanOrEqual(390 - 24);
   });
 });
