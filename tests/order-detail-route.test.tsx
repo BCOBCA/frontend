@@ -5,7 +5,8 @@ import OrderDetail from '../app/order/[id]';
 import type { Order, OrderItem } from '../src/types/api';
 
 type ViewProps = { order: Order; onCancel: () => void; onRefund: () => void; onReview: (item: OrderItem) => void; onStore: (slug: string) => void };
-const state = vi.hoisted(() => ({ user: { id: 'member' } as { id: string } | null, enabled: false, props: undefined as ViewProps | undefined, queryFn: undefined as undefined | (() => unknown), mutation: undefined as undefined | { mutationFn: () => unknown; onSuccess: () => unknown }, request: vi.fn(), invalidate: vi.fn(), refetch: vi.fn(), push: vi.fn(), mutate: vi.fn() }));
+const state = vi.hoisted(() => ({ user: { id: 'member' } as { id: string } | null, enabled: false, props: undefined as ViewProps | undefined, queryFn: undefined as undefined | (() => unknown), mutation: undefined as undefined | { mutationFn: (reason: string) => unknown; onSuccess: () => unknown }, request: vi.fn(), invalidate: vi.fn(), refetch: vi.fn(), push: vi.fn(), mutate: vi.fn() }));
+vi.mock('../src/components/orders/CancelOrderForm', () => ({ CancelOrderForm: () => null }));
 vi.mock('react-native', () => ({ useWindowDimensions: () => ({ width: 1200 }) }));
 vi.mock('expo-router', () => ({ router: { push: state.push }, useLocalSearchParams: () => ({ id: 'order-id' }) }));
 vi.mock('../src/navigation/tabs', () => ({ DESKTOP_HEADER_WIDTH: 1024 }));
@@ -13,7 +14,7 @@ vi.mock('../src/components/common/ui', () => ({ Page: ({ children, title, back }
 vi.mock('../src/components/orders/OrderDetailView', () => ({ OrderDetailView: (props: ViewProps) => { state.props = props; return null; } }));
 vi.mock('../src/services/api', () => ({ request: state.request }));
 vi.mock('../src/stores/auth', () => ({ useAuth: (select: (s: { user: typeof state.user }) => unknown) => select({ user: state.user }), queryClient: { invalidateQueries: state.invalidate } }));
-vi.mock('@tanstack/react-query', () => ({ useQuery: (options: { enabled: boolean; queryFn: () => unknown }) => { state.enabled = options.enabled; state.queryFn = options.queryFn; return { data: { id: 'order-id', history: [{ note: 'Keep history' }] }, refetch: state.refetch }; }, useMutation: (options: typeof state.mutation) => { state.mutation = options; return { mutate: state.mutate }; } }));
+vi.mock('@tanstack/react-query', () => ({ useQuery: (options: { enabled: boolean; queryFn: () => unknown }) => { state.enabled = options.enabled; state.queryFn = options.queryFn; return { data: { id: 'order-id', history: [{ note: 'Keep history' }] }, refetch: state.refetch }; }, useMutation: (options: typeof state.mutation) => { state.mutation = options; return { mutate: state.mutate, reset: vi.fn() }; } }));
 beforeEach(() => { vi.clearAllMocks(); state.user = { id: 'member' }; state.props = undefined; });
 it('shows the back button and order title in the shared desktop header', () => {
   const html = renderToStaticMarkup(<OrderDetail />);
@@ -26,9 +27,9 @@ it('passes the original order including its history to the redesign and retains 
 });
 it('keeps cancellation contract and refreshes the order/history and restored vouchers', async () => {
   renderToStaticMarkup(<OrderDetail />); state.props!.onCancel();
-  expect(state.mutate).toHaveBeenCalledOnce(); await state.mutation!.mutationFn(); await state.mutation!.onSuccess();
-  expect(state.request).toHaveBeenCalledWith('POST', '/orders/order-id/cancel'); expect(state.refetch).toHaveBeenCalledOnce();
-  for (const key of ['orders', 'membership', 'vouchers']) expect(state.invalidate).toHaveBeenCalledWith({ queryKey: [key] });
+  expect(state.mutate).not.toHaveBeenCalled(); await state.mutation!.mutationFn('Không còn nhu cầu mua'); await state.mutation!.onSuccess();
+  expect(state.request).toHaveBeenCalledWith('POST', '/orders/order-id/cancel', { reason: 'Không còn nhu cầu mua' }); expect(state.refetch).toHaveBeenCalledOnce();
+  for (const key of ['orders', 'membership', 'vouchers', 'notifications']) expect(state.invalidate).toHaveBeenCalledWith({ queryKey: [key] });
 });
 it('preserves review, refund and store navigation', () => {
   renderToStaticMarkup(<OrderDetail />);

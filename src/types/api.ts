@@ -38,7 +38,7 @@ export type AffiliateRankProgress = { rank: number; name: string; successfulRefe
 export type Affiliate = { code: string; availableBalance: number; pendingBalance: number; totalReferrals: number; debtBalance: number; rankInfo?: AffiliateRankProgress | null; totalCommission?: number };
 export type Referral = { id: string; fullName: string; status: string; createdAt: string };
 export type Article = { id: string; title: string; summary: string; content: string; thumbnailUrl: string; publishedAt: string | null };
-export type Notification = { id: string; title: string; body: string; readAt: string | null; createdAt: string };
+export type Notification = { id: string; title: string; body: string; readAt: string | null; createdAt: string; targetType?: string; targetId?: string | null; type?: string };
 export type Quotation = { id: string; quoteCode: string; amount: number; description: string; validUntil: string; status: string };
 
 export type CheckoutStoreOrder = { storeId: string; storeName: string; subtotal: number; discountAmount: number; shippingFee: number; shippingDiscountAmount: number; totalAmount: number; shopDiscountAmount?: number; platformDiscountAmount?: number; shopVoucherCode?: string | null; expectedDeliveryAt?: string | null };

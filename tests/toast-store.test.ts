@@ -1,9 +1,19 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useToast } from '../src/stores/toast';
 
-beforeEach(() => useToast.setState({ toast: null }));
+beforeEach(() => useToast.setState({ toast: null, queue: [] }));
 
 describe('screen-level toast feedback', () => {
+  it('queues each order event without replacing previous notifications', () => {
+    useToast.getState().enqueue('Confirmed');
+    useToast.getState().enqueue('Picked');
+    useToast.getState().enqueue('Delivered');
+    for (const message of ['Confirmed', 'Picked', 'Delivered']) {
+      expect(useToast.getState().toast?.message).toBe(message);
+      useToast.getState().dismiss(useToast.getState().toast!.id);
+    }
+    expect(useToast.getState().toast).toBeNull();
+  });
   it('defaults to success and supports error feedback', () => {
     useToast.getState().show('Đã thêm vào giỏ hàng.');
     expect(useToast.getState().toast).toMatchObject({ message: 'Đã thêm vào giỏ hàng.', tone: 'success' });

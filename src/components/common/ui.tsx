@@ -10,6 +10,8 @@ import { PrimaryTabFooter } from '../../navigation/PrimaryTabFooter';
 import { productSearchHref } from '../../services/product-search';
 import { HeaderSearchPopover } from './HeaderSearchPopover';
 
+const headerLinks = [...primaryTabs.slice(0, -1), { href: '/notifications', title: 'Thông báo', Icon: Bell } as const, ...primaryTabs.slice(-1)];
+
 export function Button({ title, onPress, disabled, outline, black }: { title: string; onPress: () => void; disabled?: boolean; outline?: boolean; black?: boolean }) {
   return <Pressable accessibilityRole="button" accessibilityState={{ disabled: !!disabled }} disabled={disabled} onPress={onPress}
     style={({ pressed }) => ({ minHeight: 44, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', borderRadius: 8, borderWidth: 1, borderColor: disabled ? colors.disabled : outline ? colors.primary : 'transparent', backgroundColor: disabled ? colors.disabled : outline ? colors.surface : black ? colors.black : colors.primary, opacity: pressed ? 0.75 : 1 })}>
@@ -75,8 +77,8 @@ export function Header({ title, back, search, searchPlaceholder, onSearch, onSub
       style={({ pressed }) => ({ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: 8, opacity: pressed ? 0.65 : 1 })}>
       <Bell color={colors.surface} size={23} strokeWidth={1.8} />
     </Pressable>}
-    {wide && <View role="navigation" accessibilityLabel="Điều hướng chính" style={{ flex: 1, minWidth: 432, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', gap: 8 }}>
-      {primaryTabs.map(({ href, title: label, Icon }) => <Link key={href} href={href} asChild aria-current={pathname === href ? 'page' : undefined}>
+    {wide && <View role="navigation" accessibilityLabel="Điều hướng chính" style={{ flex: 1, minWidth: 520, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', gap: 8 }}>
+      {headerLinks.map(({ href, title: label, Icon }) => <Link key={href} href={href} asChild aria-current={pathname === href ? 'page' : undefined}>
         <Pressable accessibilityRole="link" accessibilityLabel={label} style={{ flex: 1, maxWidth: 104, alignItems: 'center', justifyContent: 'center', gap: 4, height: 48, minWidth: 80, paddingHorizontal: 8, borderRadius: 8, backgroundColor: pathname === href ? '#FFFFFF24' : 'transparent' }}>
           <Icon color={colors.surface} size={22} strokeWidth={1.7} />
           <Text numberOfLines={1} style={{ color: colors.surface, fontSize: 12, lineHeight: 16, textAlign: 'center', fontWeight: pathname === href ? '700' : '600' }}>{label}</Text>

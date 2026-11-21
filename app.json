@@ -25,6 +25,7 @@
       "output": "single"
     },
     "plugins": [
+      ["expo-notifications", { "defaultChannel": "orders", "color": "#DF403B" }],
       "expo-router",
       "expo-image",
       "expo-secure-store",

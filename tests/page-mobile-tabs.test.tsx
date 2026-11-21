@@ -34,6 +34,9 @@ describe('mobile navigation on member subpages', () => {
     state.width = 1024;
     const html = renderToStaticMarkup(<Page title="Địa chỉ nhận hàng" back footerTab="member" />);
     expect(html).toContain('Điều hướng chính'); expect(html).not.toContain('role="tablist"');
+    expect(html).toContain('href="/notifications"');
+    expect(html.indexOf('aria-label="Giỏ hàng"')).toBeLessThan(html.indexOf('aria-label="Thông báo"'));
+    expect(html.indexOf('aria-label="Thông báo"')).toBeLessThan(html.indexOf('aria-label="Thành viên"'));
   });
   it('does not duplicate the navigator footer on routes already inside tabs', () => {
     state.segments = ['(tabs)', 'member'];

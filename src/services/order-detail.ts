@@ -1,3 +1,4 @@
+import { ghnStatusLabels } from './ghn-status';
 import type { Order, OrderItem } from '../types/api';
 
 export function parseOrderAddress(value: string) {
@@ -7,7 +8,7 @@ export function parseOrderAddress(value: string) {
 }
 
 export const orderStatusLabels: Record<string, string> = { PENDING: 'Chờ xác nhận', CONFIRMED: 'Chờ giao hàng', READY: 'Chờ giao hàng', SHIPPING: 'Đang giao', COMPLETED: 'Hoàn thành', CANCELLED: 'Đã hủy', REFUNDED: 'Đã hoàn tiền' };
-export const orderHistoryLabels: Record<string, string> = { PENDING: 'Đặt hàng thành công', CONFIRMED: 'Shop đã xác nhận đơn hàng', READY: 'Đơn hàng đã sẵn sàng giao', SHIPPING: 'Đơn hàng đang được giao', COMPLETED: 'Đơn hàng đã hoàn thành', CANCELLED: 'Đơn hàng đã hủy', REFUNDED: 'Đơn hàng đã hoàn tiền' };
+export const orderHistoryLabels: Record<string, string> = { PENDING: 'Đặt hàng thành công', CONFIRMED: 'Shop đã xác nhận đơn hàng', READY: 'Đơn hàng đã sẵn sàng giao', SHIPPING: 'Đơn hàng đang được giao', COMPLETED: 'Đơn hàng đã hoàn thành', CANCELLED: 'Đơn hàng đã hủy', REFUNDED: 'Đơn hàng đã hoàn tiền', ...Object.fromEntries(Object.entries(ghnStatusLabels).map(([status, label]) => [`GHN:${status}`, label])) };
 const stages: Record<string, number> = { PENDING: 0, CONFIRMED: 1, READY: 1, SHIPPING: 2, COMPLETED: 3, REFUNDED: 3 };
 export function orderProgress(order: Order) {
   const history = [...(order.history ?? [])].sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));

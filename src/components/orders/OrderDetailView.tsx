@@ -1,3 +1,4 @@
+import { ghnStatusLabels } from '../../services/ghn-status';
 import { useState, type ReactNode } from 'react';
 import { Pressable, Text, View, useWindowDimensions, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
@@ -8,6 +9,7 @@ import type { Order, OrderItem } from '../../types/api';
 import { OrderShippingAddress } from './OrderShippingAddress';
 
 type Props = { order: Order; busy?: boolean; refreshing?: boolean; onCancel: () => void; onRefund: () => void; onReview: (item: OrderItem) => void; onStore: (slug: string) => void };
+const shipmentStatusLabels: Record<string, string> = { ...ghnStatusLabels, DELIVERED: 'Đã giao hàng', CANCELLED: 'Đã hủy vận đơn', SHIPPING: 'Đang giao', SHIPPED: 'Đã bàn giao vận chuyển', CREATED: 'Đã tạo vận đơn', IN_TRANSIT: 'Đang vận chuyển' };
 const card: ViewStyle = { backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: '#EEEEF3', boxShadow: '0 3px 14px rgba(35,37,53,0.025)' };
 const divider: ViewStyle = { borderTopWidth: 1, borderTopColor: '#EEEEF3' };
 const bannerTitles: Record<string, string> = { PENDING: 'Đặt hàng thành công!', CONFIRMED: 'Đơn hàng đã được xác nhận', READY: 'Đơn hàng sẵn sàng giao', SHIPPING: 'Đơn hàng đang được giao', COMPLETED: 'Đơn hàng đã hoàn thành', CANCELLED: 'Đơn hàng đã hủy', REFUNDED: 'Đơn hàng đã hoàn tiền' };
@@ -79,7 +81,7 @@ export function OrderDetailView({ order, busy, refreshing, onCancel, onRefund, o
             {group.items.map(item => <ProductRow key={item.id} item={item} reviewable={reviewable} onReview={() => onReview(item)} />)}
           </View>)}
         </Panel>
-        {!!order.shipments?.length && <Panel title="Thông tin vận chuyển" Icon={Truck}>{order.shipments.map(shipment => <View key={shipment.id} style={{ gap: 6, paddingVertical: 4 }}><Text style={{ color: colors.text, fontSize: 14, fontWeight: '600' }}>{shipment.carrier || 'Đơn vị vận chuyển'}{shipment.trackingCode ? ` · ${shipment.trackingCode}` : ''}</Text><Text style={{ color: colors.muted, fontSize: 13 }}>{({ DELIVERED: 'Đã giao hàng', CANCELLED: 'Đã hủy vận đơn', SHIPPING: 'Đang giao', SHIPPED: 'Đã bàn giao vận chuyển', CREATED: 'Đã tạo vận đơn', IN_TRANSIT: 'Đang vận chuyển' } as Record<string, string>)[shipment.status] ?? shipment.status}</Text>{!!shipment.shippedAt && <Text style={{ color: colors.muted, fontSize: 12 }}>Gửi hàng: {dateTime(shipment.shippedAt)}</Text>}{!!shipment.deliveredAt && <Text style={{ color: colors.muted, fontSize: 12 }}>Đã giao: {dateTime(shipment.deliveredAt)}</Text>}</View>)}</Panel>}
+        {!!order.shipments?.length && <Panel title="Thông tin vận chuyển" Icon={Truck}>{order.shipments.map(shipment => <View key={shipment.id} style={{ gap: 6, paddingVertical: 4 }}><Text style={{ color: colors.text, fontSize: 14, fontWeight: '600' }}>{shipment.carrier || 'Đơn vị vận chuyển'}{shipment.trackingCode ? ` · ${shipment.trackingCode}` : ''}</Text><Text style={{ color: colors.muted, fontSize: 13 }}>{shipmentStatusLabels[shipment.status] ?? shipment.status}</Text>{!!shipment.shippedAt && <Text style={{ color: colors.muted, fontSize: 12 }}>Gửi hàng: {dateTime(shipment.shippedAt)}</Text>}{!!shipment.deliveredAt && <Text style={{ color: colors.muted, fontSize: 12 }}>Đã giao: {dateTime(shipment.deliveredAt)}</Text>}</View>)}</Panel>}
         <Panel title="Lịch sử đơn hàng" Icon={History}>
           {history.length ? history.map((entry, index) => <View key={`${entry.createdAt}-${index}`} style={{ flexDirection: 'row', gap: 12 }}><View style={{ width: 16, alignItems: 'center' }}><View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: '#E53641', marginTop: 6 }} />{index < history.length - 1 && <View style={{ flex: 1, minHeight: 40, width: 1, backgroundColor: '#E5E6ED', marginTop: 5 }} />}</View><View style={{ flex: 1, gap: 5, paddingBottom: index < history.length - 1 ? 16 : 0 }}><Text style={{ color: colors.text, fontSize: 14, fontWeight: '600' }}>{orderHistoryLabels[entry.newStatus] ?? entry.newStatus}</Text><Text style={{ color: colors.muted, fontSize: 12, lineHeight: 18 }}>{dateTime(entry.createdAt)}</Text>{!!entry.note && <Text style={{ color: '#575E6D', fontSize: 13, lineHeight: 20 }}>{entry.note}</Text>}</View></View>) : <Text style={{ color: colors.muted, fontSize: 13 }}>Chưa có cập nhật trạng thái.</Text>}
         </Panel>
