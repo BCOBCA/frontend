@@ -6,6 +6,7 @@ import { Page, Status } from '../components/common/ui';
 import { DealerImage, FollowButton, VerifiedBadge } from '../components/dealers/DealerCard';
 import { dealerDetailTabs, DealerDetailTabs } from '../components/dealers/DealerDetailTabs';
 import { DealerProducts } from '../components/dealers/DealerProducts';
+import { ShopVouchers } from '../components/promotions/ShopVouchers';
 import { getDealer } from '../services/dealers';
 import { useAuth } from '../stores/auth';
 import { colors } from '../theme';
@@ -48,7 +49,7 @@ export default function DealerDetailScreen() {
         <DealerDetailTabs value={activeTab.id} onChange={value => router.setParams({ tab: value })} />
       </View>
       <View nativeID="dealer-detail-panel" role="tabpanel" aria-labelledby={`dealer-tab-${activeTab.id}`}>
-      {activeTab.id === 'products' ? <DealerProducts key={dealer.id} storeId={dealer.id} /> : activeTab.id === 'about' ? <View style={{ flexDirection: width >= 850 ? 'row' : 'column', gap: 20, alignItems: 'flex-start' }}>
+      {activeTab.id === 'products' ? <View style={{ gap: 20 }}><ShopVouchers storeId={dealer.id} /><DealerProducts key={dealer.id} storeId={dealer.id} /></View> : activeTab.id === 'promotions' ? <ShopVouchers storeId={dealer.id} /> : activeTab.id === 'about' ? <View style={{ flexDirection: width >= 850 ? 'row' : 'column', gap: 20, alignItems: 'flex-start' }}>
         <View style={{ flex: 1, width: '100%', padding: 20, borderRadius: 16, backgroundColor: 'white', gap: 16 }}><Text accessibilityRole="header" style={{ fontSize: 18, fontWeight: '700', color: colors.text }}>Chi nhánh công khai</Text>
           {detail.branches.length ? detail.branches.map(branch => <View key={branch.id} style={{ gap: 8, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 14 }}>
             <Text style={{ fontSize: 14, fontWeight: '700', color: colors.text }}>{branch.name}{branch.isMain ? ' · Chi nhánh chính' : ''}</Text>

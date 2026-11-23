@@ -1,0 +1,13 @@
+# My offers
+
+- Member menu now places `Ưu đãi của tôi` directly below `Đơn hàng của tôi`, linking to `/my-offers`.
+- `app/my-offers.tsx` gates private content behind login. Infinite query key `['vouchers', 'mine', userId, 'AVAILABLE']` participates in existing voucher invalidation after claim, checkout and cancellation. Zero stale time refreshes when reopened; API requests `status=AVAILABLE` before pagination.
+- `MyOffersView` has no filter/sort chips. It uses the shared `OfferCard` with `owned` presentation: compact pink ticket style for both free and point-redeemed offers, four desktop/two mobile columns, and a conditions action. Used/expired/unavailable cards are also filtered defensively on the client.
+- Clicking an owned card opens `OwnedOfferDetails`; full description, terms, code/copy, collection/expiry dates and shopping action live in that modal. Selection is resolved against current available items so used/removed offers cannot leave stale details visible. Existing Page renders the member footer on mobile.
+- Backend adds authenticated `GET /api/vouchers/mine` to MemberController with the existing pagination envelope. Query status accepts AVAILABLE, COLLECTED, REDEEMED, USED, EXPIRED; absent means all. Caller identity comes from the session. `OwnedVoucherDto.id` is the user claim ID; `voucherId` identifies the offer.
+- Query joins existing UserVoucher/Voucher rows and retains expired/inactive/used history for API consumers; the wallet requests only AVAILABLE. Redemption/checkout eligibility and schema are unchanged.
+- Discovery requests `/vouchers?...&status=UNCLAIMED` and excludes claimed cache entries immediately after collection. Backend applies this filter before pagination; guest catalog behavior is preserved. Cancelled vouchers return to the wallet rather than the collection catalog.
+- Frontend tests cover account isolation, guest gating, pagination, shared card actions, popup conditions, used/expired removal and member menu order. Backend flow also asserts UNCLAIMED exclusions and AVAILABLE removal after usage. Its connection builder preserves the original password when constructing the temporary database connection.
+- Deployment requires both frontend and backend updates. No database migration.
+- Validation: frontend suite passed (516 tests), followed by all 27 focused tests after the final render adjustment; typecheck/lint and web export passed. PostgreSQL redemption flow passed with assertions that used vouchers are absent from AVAILABLE responses and collected vouchers are absent from UNCLAIMED responses before pagination.
+- Browser inspection remains unavailable because the DevTools profile is occupied; runtime reports no connected Browser session.

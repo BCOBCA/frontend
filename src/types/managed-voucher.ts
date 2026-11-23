@@ -1,0 +1,6 @@
+import type { Page, Voucher } from './api';
+export type ManagedVoucher = Voucher & { storeId: string | null; storeName: string; startsAt: string; status: 'ACTIVE' | 'UPCOMING' | 'EXPIRED' | 'EXHAUSTED' | 'DISABLED'; usageLimit: number | null; perUserLimit: number; usedCount: number; claimedCount: number; productIds: string[]; disabledReason: string | null };
+export type ManagedVoucherList = { vouchers: Page<ManagedVoucher>; statistics: { active: number; upcoming: number; used: number } };
+export type ManagedVoucherDetail = { voucher: ManagedVoucher; usages: Page<{ id: string; orderId: string; discountAmount: number; status: string; createdAt: string }>; actions: { action: string; reason: string | null; createdAt: string }[] };
+export const managedVoucherStatus = { ACTIVE: 'Đang diễn ra', UPCOMING: 'Sắp diễn ra', EXPIRED: 'Hết hạn', EXHAUSTED: 'Hết lượt', DISABLED: 'Vô hiệu hóa' };
+export const managedVoucherAction = (action: string) => ({ CREATE_SELLER_VOUCHER: 'Shop tạo voucher', UPDATE_SELLER_VOUCHER: 'Shop cập nhật voucher', SELLER_DISABLE_VOUCHER: 'Shop kết thúc voucher', ADMIN_DISABLE_VOUCHER: 'Quản trị vô hiệu hóa voucher', CREATE: 'Tạo voucher', UPDATE: 'Cập nhật voucher' }[action] ?? 'Cập nhật voucher');

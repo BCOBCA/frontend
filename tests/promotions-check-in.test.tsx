@@ -2,12 +2,15 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Promotions from '../app/(tabs)/promotions';
+import type { Voucher } from '../src/types/api';
 
 const state = vi.hoisted(() => ({
   user: null as { id: string } | null,
   member: { data: undefined as undefined | { availablePoints: number; checkedInToday: boolean; checkInStreakDays?: number }, isLoading: false, error: null as Error | null, refetch: vi.fn() },
   push: vi.fn(), mutate: vi.fn(), enabled: false, checkInSuccess: false,
   buttons: [] as { title: string; disabled?: boolean; onPress: () => void }[],
+  offers: [] as Voucher[], cards: [] as Voucher[], request: vi.fn(),
+  catalog: undefined as undefined | { queryFn: (context: { pageParam: number }) => Promise<unknown> },
 }));
 vi.mock('react-native', () => {
   const Container = ({ children }: { children: React.ReactNode }) => <div>{children}</div>;
@@ -22,14 +25,14 @@ vi.mock('expo-clipboard', () => ({ setStringAsync: vi.fn() }));
 vi.mock('lucide-react-native', () => Object.fromEntries(['CalendarCheck', 'Check', 'ChevronRight', 'Crown', 'Flame', 'Gift', 'Percent', 'Star', 'TicketPercent', 'X', 'Zap'].map(name => [name, () => null])));
 vi.mock('../src/components/membership/MemberStar', () => ({ MemberStar: () => null }));
 vi.mock('../src/components/promotions/CheckInGift', () => ({ CheckInGift: () => null }));
-vi.mock('../src/components/promotions/OfferCard', () => ({ OfferCard: () => null }));
+vi.mock('../src/components/promotions/OfferCard', () => ({ OfferCard: ({ voucher }: { voucher: Voucher }) => { state.cards.push(voucher); return null; } }));
 vi.mock('../src/components/common/TopToast', () => ({ TopToast: () => null }));
 vi.mock('../src/theme', () => ({ colors: {}, styles: {}, money: String }));
-vi.mock('../src/services/api', () => ({ request: vi.fn(), errorMessage: String }));
+vi.mock('../src/services/api', () => ({ request: state.request, errorMessage: String }));
 vi.mock('../src/stores/auth', () => ({ useAuth: (select: (s: { user: typeof state.user }) => unknown) => select(state), queryClient: { invalidateQueries: vi.fn() } }));
 vi.mock('@tanstack/react-query', () => ({
   useQuery: (options: { enabled: boolean; queryKey: string[] }) => { if (options.queryKey[0] === 'check-in-program') return { data: { rewardPoints: 1, isActive: true } }; state.enabled = options.enabled; return state.member; },
-  useInfiniteQuery: () => ({ data: { pages: [] }, isLoading: false }),
+  useInfiniteQuery: (options: typeof state.catalog) => { state.catalog = options; return { data: { pages: [{ items: state.offers }] }, isLoading: false }; },
   useMutation: () => ({ mutate: state.mutate, isPending: false, isSuccess: state.checkInSuccess, data: { rewardPoints: 1, streakDays: 1 } }),
 }));
 vi.mock('../src/components/common/ui', () => ({
@@ -41,10 +44,19 @@ vi.mock('../src/components/common/ui', () => ({
 beforeEach(() => {
   state.user = null; state.member.data = undefined; state.member.isLoading = false; state.member.error = null;
   state.buttons = []; state.push.mockClear(); state.mutate.mockClear(); state.checkInSuccess = false;
+  state.offers = []; state.cards = []; state.request.mockClear(); state.catalog = undefined;
 });
 const checkInButton = () => state.buttons.find(button => /điểm danh/i.test(button.title))!;
 
 describe('promotions check-in', () => {
+  it('requests unclaimed offers before pagination and hides already owned cards from cached data', async () => {
+    const voucher: Voucher = { id: 'available', code: 'SAVE', name: 'Giảm giá', description: '', discountType: 'FIXED', discountValue: 20000, minOrderAmount: 0, maxDiscount: null, expiresAt: '2099-01-01', claimed: false };
+    state.offers = [voucher, { ...voucher, id: 'collected', claimed: true }, { ...voucher, id: 'redeemed', claimed: true, pointCost: 500 }];
+    renderToStaticMarkup(<Promotions />);
+    expect(state.cards.map(item => item.id)).toEqual(['available']);
+    await state.catalog!.queryFn({ pageParam: 3 });
+    expect(state.request).toHaveBeenCalledWith('GET', '/vouchers?page=3&pageSize=50&status=UNCLAIMED');
+  });
   it('does not leave an inline reward notification below the available points after check-in', () => {
     state.user = { id: 'member' }; state.checkInSuccess = true;
     state.member.data = { availablePoints: 1, checkedInToday: true };

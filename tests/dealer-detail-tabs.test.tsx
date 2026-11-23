@@ -14,6 +14,7 @@ vi.mock('lucide-react-native', () => Object.fromEntries(['Mail', 'MapPin', 'Phon
 vi.mock('../src/components/common/ui', () => ({ Page: ({ children }: { children?: React.ReactNode }) => <main>{children}</main>, Status: () => null }));
 vi.mock('../src/components/dealers/DealerCard', () => ({ DealerImage: () => null, FollowButton: () => <button>Theo dõi</button>, VerifiedBadge: () => null }));
 vi.mock('../src/components/dealers/DealerProducts', () => ({ DealerProducts: () => <div>Chưa có sản phẩm để hiển thị.</div> }));
+vi.mock('../src/components/promotions/ShopVouchers', () => ({ ShopVouchers: () => <div>Voucher của Shop</div> }));
 vi.mock('../src/stores/auth', () => ({ useAuth: () => null }));
 vi.mock('../src/theme', () => ({ colors: { primary: '#F00', text: '#222', muted: '#777', border: '#EEE' } }));
 vi.mock('../src/services/dealers', () => ({ getDealer: vi.fn() }));
@@ -59,7 +60,9 @@ describe('dealer detail tabs', () => {
   });
   it('shows the matching empty panels without a fabricated review count', () => {
     routing.params.tab = 'promotions';
-    expect(renderToStaticMarkup(<DealerDetailScreen />)).toContain('Chưa có khuyến mãi để hiển thị.');
+    const promotions = renderToStaticMarkup(<DealerDetailScreen />);
+    expect(promotions).toContain('Voucher của Shop');
+    expect(promotions).not.toContain('Chưa có khuyến mãi để hiển thị.');
     routing.params.tab = 'reviews';
     const html = renderToStaticMarkup(<DealerDetailScreen />);
     expect(html).toContain('Chưa có đánh giá để hiển thị.');

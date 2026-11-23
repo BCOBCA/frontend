@@ -1,0 +1,30 @@
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { beforeEach, expect, it, vi } from 'vitest';
+import { ShopVouchers } from '../src/components/promotions/ShopVouchers';
+import type { Voucher } from '../src/types/api';
+const state = vi.hoisted(() => ({ user: null as { id: string } | null, query: undefined as undefined | { queryKey: unknown[]; queryFn: (context: { pageParam: number }) => Promise<unknown> }, mutation: undefined as undefined | { mutationFn: (voucher: Voucher) => Promise<unknown>; onSuccess: () => Promise<void> }, cards: [] as { voucher: Voucher; onClaim: () => void }[], request: vi.fn(), push: vi.fn(), mutate: vi.fn(), invalidate: vi.fn() }));
+const voucher: Voucher = { id: 'shop-coupon', code: 'SHOP', name: 'Ưu đãi shop', description: '', discountType: 'FIXED', discountValue: 20000, maxDiscount: null, minOrderAmount: 100000, expiresAt: '2099-01-01', claimed: false, storeId: 'shop-a', storeName: 'Shop A' };
+vi.mock('react-native', () => ({ View: 'div', Text: 'span', ScrollView: 'div', Modal: () => null, Pressable: 'button', useWindowDimensions: () => ({ width: 1280 }) }));
+vi.mock('expo-router', () => ({ router: { push: state.push } }));
+vi.mock('lucide-react-native', () => ({ X: () => null }));
+vi.mock('../src/components/common/ui', () => ({ Button: () => null, Empty: () => null, Status: () => null }));
+vi.mock('../src/components/promotions/OfferCard', () => ({ OfferCard: (props: typeof state.cards[number]) => { state.cards.push(props); return <article>{props.voucher.storeName}</article>; } }));
+vi.mock('../src/services/api', () => ({ request: state.request }));
+vi.mock('../src/stores/auth', () => ({ useAuth: (select: (s: typeof state) => unknown) => select(state), queryClient: { invalidateQueries: state.invalidate } }));
+vi.mock('../src/theme', () => ({ colors: {}, styles: {}, money: String }));
+vi.mock('@tanstack/react-query', () => ({ useInfiniteQuery: (options: typeof state.query) => { state.query = options; return { data: { pages: [{ items: [voucher] }] }, isLoading: false }; }, useMutation: (options: typeof state.mutation) => { state.mutation = options; return { mutate: state.mutate, isPending: false }; } }));
+beforeEach(() => { vi.clearAllMocks(); state.user = null; state.cards = []; state.query = undefined; state.mutation = undefined; });
+it('loads only the current shop vouchers and requires login to collect', async () => {
+  renderToStaticMarkup(<ShopVouchers storeId="shop-a" />); await state.query!.queryFn({ pageParam: 2 });
+  expect(state.query!.queryKey).toEqual(['vouchers', 'shop', 'shop-a', 'guest']);
+  expect(state.request).toHaveBeenCalledWith('GET', '/vouchers?storeId=shop-a&page=2&pageSize=20');
+  state.cards[0].onClaim(); expect(state.push).toHaveBeenCalledWith('/login'); expect(state.mutate).not.toHaveBeenCalled();
+});
+it('uses the existing claim endpoint and invalidates the shared wallet/catalog caches', async () => {
+  state.user = { id: 'buyer-a' }; renderToStaticMarkup(<ShopVouchers storeId="shop-a" />);
+  state.cards[0].onClaim(); expect(state.mutate).toHaveBeenCalledWith(voucher);
+  await state.mutation!.mutationFn(voucher); await state.mutation!.onSuccess();
+  expect(state.request).toHaveBeenCalledWith('POST', '/vouchers/shop-coupon/claim');
+  expect(state.invalidate).toHaveBeenCalledWith({ queryKey: ['vouchers'] });
+});

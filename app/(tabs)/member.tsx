@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import Svg, { Path } from 'react-native-svg';
 import { router } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Clock, CircleCheck, CircleAlert, Package, Truck, ReceiptText, UsersRound, Medal, FileText, UserRound, Heart, MessageSquare, MapPin, Info, ChevronRight } from 'lucide-react-native';
+import { Clock, CircleCheck, CircleAlert, Package, Truck, ReceiptText, TicketPercent, UsersRound, Medal, FileText, UserRound, Heart, MessageSquare, MapPin, Info, ChevronRight } from 'lucide-react-native';
 import { Page, Button, Empty, Status } from '../../src/components/common/ui';
 import { MemberQRCode } from '../../src/components/membership/MemberQRCode';
 import { MemberLevelProgress } from '../../src/components/membership/MemberLevelProgress';
@@ -14,7 +14,7 @@ import { request } from '../../src/services/api';
 import { useAuth } from '../../src/stores/auth';
 import type { Membership } from '../../src/types/api';
 
-const menu = [ ['Đơn hàng của tôi', ReceiptText, '/orders'], ['Danh sách giới thiệu người mới', UsersRound, '/referrals'], ['Bảng xếp hạng lượt giới thiệu', Medal, '/leaderboard'], ['Chính sách Affiliate', FileText, '/info/affiliate'], ['Cá nhân', UserRound, '/profile'], ['Sản phẩm yêu thích', Heart, '/favorites'], ['Phản hồi và hỗ trợ', MessageSquare, '/feedback'], ['Danh sách địa chỉ', MapPin, '/addresses'], ['Về chúng tôi', Info, '/info/about'] ] as const;
+const menu = [ ['Đơn hàng của tôi', ReceiptText, '/orders'], ['Ưu đãi của tôi', TicketPercent, '/my-offers'], ['Danh sách giới thiệu người mới', UsersRound, '/referrals'], ['Bảng xếp hạng lượt giới thiệu', Medal, '/leaderboard'], ['Chính sách Affiliate', FileText, '/info/affiliate'], ['Cá nhân', UserRound, '/profile'], ['Sản phẩm yêu thích', Heart, '/favorites'], ['Phản hồi và hỗ trợ', MessageSquare, '/feedback'], ['Danh sách địa chỉ', MapPin, '/addresses'], ['Về chúng tôi', Info, '/info/about'] ] as const;
 const statuses = [ ['Chờ xác nhận', Clock, 'PENDING'], ['Chờ giao hàng', Package, 'CONFIRMED'], ['Đang giao', Truck, 'SHIPPING'], ['Hoàn thành', CircleCheck, 'COMPLETED'] ] as const;
 export default function Member() {
   const { width } = useWindowDimensions();
@@ -78,8 +78,9 @@ export default function Member() {
         <Text style={{ color: colors.surface, fontSize: 12, lineHeight: 18, fontWeight: '600' }}>Xem chi tiết ›</Text>
       </Pressable>}
     </View>)}</View>
-    <View>{menu.map(([label, Icon, route]) => <Pressable key={label} accessibilityRole="button" onPress={() => router.push(route)} style={[s.row, s.line, { minHeight: 52, paddingHorizontal: 16, gap: 12 }]}><Icon color={colors.text} size={22} strokeWidth={1.7} /><Text style={[s.body, { flex: 1 }]}>{label}</Text><ChevronRight size={18} color={colors.muted} /></Pressable>)}</View>
+    <View>{menu.map(([label, Icon, route]) => <Pressable key={label} accessibilityRole="button" accessibilityLabel={label} onPress={() => router.push(route)} style={[s.row, s.line, { minHeight: 52, paddingHorizontal: 16, gap: 12 }]}><Icon color={colors.text} size={22} strokeWidth={1.7} /><Text style={[s.body, { flex: 1 }]}>{label}</Text><ChevronRight size={18} color={colors.muted} /></Pressable>)}</View>
     <Status error={logout.error} />
+    {user?.roles.some(role => role === 'Admin' || role === 'SuperAdmin') && <View style={s.padded}><Button title="Quản lý khuyến mãi" outline onPress={() => router.push('/admin-vouchers')} /></View>}
     {user && <View style={s.padded}><Button title="Đăng xuất" disabled={logout.isPending} outline onPress={() => logout.mutate()} /></View>}
     <Empty text={'© 2026 Báo chí Online BCA. All rights reserved.\nVersion: 1.0.0'} />
   </Page>;

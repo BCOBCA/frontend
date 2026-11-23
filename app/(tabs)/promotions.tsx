@@ -37,7 +37,7 @@ export default function Promotions() {
   const member = useQuery({ queryKey: ['membership', user?.id], queryFn: () => request<Membership>('GET', '/membership'), enabled: !!user });
   const program = useQuery({ queryKey: ['check-in-program'], queryFn: () => request<{ rewardPoints: number; isActive: boolean }>('GET', '/membership/check-in-program') });
   const vouchers = useInfiniteQuery({ queryKey: ['vouchers', user?.id ?? 'guest'], initialPageParam: 1,
-    queryFn: ({ pageParam }) => request<Page<Voucher>>('GET', `/vouchers?page=${pageParam}&pageSize=50`),
+    queryFn: ({ pageParam }) => request<Page<Voucher>>('GET', `/vouchers?page=${pageParam}&pageSize=50&status=UNCLAIMED`),
     getNextPageParam: last => last.page < last.totalPages ? last.page + 1 : undefined });
   const checkIn = useMutation({ mutationKey: ['check-in', user?.id], mutationFn: () => request<{ rewardPoints: number; streakDays: number }>('POST', '/membership/check-ins'), onSuccess: () => { setShowCheckInToast(true); void queryClient.invalidateQueries({ queryKey: ['membership'] }); void queryClient.invalidateQueries({ queryKey: ['points'] }); } });
   const claim = useMutation({ mutationFn: (voucher: Voucher) => request('POST', `/vouchers/${voucher.id}/claim`),
@@ -51,7 +51,7 @@ export default function Promotions() {
     onSettled: (_data, _error, voucher) => { setPendingVoucherIds(current => { const next = new Set(current); next.delete(voucher.id); return next; }); },
   });
   const selectedBusy = !!selected && pendingVoucherIds.has(selected.voucher.id);
-  const offers = filterOffers(vouchers.data?.pages.flatMap(page => page.items) ?? [], category);
+  const offers = filterOffers((vouchers.data?.pages.flatMap(page => page.items) ?? []).filter(voucher => !voucher.claimed), category);
   const free = offers.filter(voucher => !(voucher.pointCost ?? 0));
   const rewards = offers.filter(voucher => (voucher.pointCost ?? 0) > 0);
   const columns = width >= 1000 ? 4 : width >= 700 ? 3 : 2;

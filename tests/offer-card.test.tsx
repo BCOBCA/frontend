@@ -4,10 +4,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { OfferCard } from '../src/components/promotions/OfferCard';
 import type { Voucher } from '../src/types/api';
 
+const actions = vi.hoisted(() => ({} as Record<string, () => void>));
+
 vi.mock('react-native', () => ({
   View: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   Text: ({ children }: { children?: React.ReactNode }) => <span>{children}</span>,
-  Pressable: ({ children, accessibilityLabel, disabled }: { children?: React.ReactNode; accessibilityLabel?: string; disabled?: boolean }) => <button aria-label={accessibilityLabel} disabled={disabled}>{children}</button>,
+  Pressable: ({ children, accessibilityLabel, disabled, onPress }: { children?: React.ReactNode; accessibilityLabel?: string; disabled?: boolean; onPress: () => void }) => { if (accessibilityLabel) actions[accessibilityLabel] = onPress; return <button aria-label={accessibilityLabel} disabled={disabled}>{children}</button>; },
 }));
 vi.mock('lucide-react-native', () => ({ Check: () => null, TicketPercent: () => null, Truck: () => null }));
 vi.mock('../src/components/membership/MemberStar', () => ({ MemberStar: () => null }));
@@ -17,6 +19,12 @@ const voucher: Voucher = { id: 'voucher-a', name: 'Giảm 20.000đ', code: 'SAVE
 const render = (item: Voucher, busy = false) => renderToStaticMarkup(<OfferCard voucher={item} width={300} busy={busy} onClaim={vi.fn()} onDetails={vi.fn()} />);
 
 describe('voucher collection state', () => {
+  it.each([0, 500])('opens conditions for owned vouchers without allowing another %i-point claim', pointCost => {
+    const details = vi.fn(), claim = vi.fn();
+    const html = renderToStaticMarkup(<OfferCard voucher={{ ...voucher, claimed: true, pointCost }} owned width={300} busy={false} onClaim={claim} onDetails={details} />);
+    expect(html).toContain('Xem điều kiện'); expect(html).not.toContain('disabled');
+    actions[`Xem điều kiện: ${voucher.name}`](); expect(details).toHaveBeenCalledOnce(); expect(claim).not.toHaveBeenCalled();
+  });
   it.each([0, 100])('shows collected status rather than a copy action for %i point cost', pointCost => {
     const html = render({ ...voucher, claimed: true, pointCost });
     expect(html).toContain('Đã thu thập');
