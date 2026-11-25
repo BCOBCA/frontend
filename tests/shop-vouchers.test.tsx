@@ -3,9 +3,15 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { ShopVouchers } from '../src/components/promotions/ShopVouchers';
 import type { Voucher } from '../src/types/api';
-const state = vi.hoisted(() => ({ user: null as { id: string } | null, query: undefined as undefined | { queryKey: unknown[]; queryFn: (context: { pageParam: number }) => Promise<unknown> }, mutation: undefined as undefined | { mutationFn: (voucher: Voucher) => Promise<unknown>; onSuccess: () => Promise<void> }, cards: [] as { voucher: Voucher; onClaim: () => void }[], request: vi.fn(), push: vi.fn(), mutate: vi.fn(), invalidate: vi.fn() }));
+const state = vi.hoisted(() => ({ user: null as { id: string } | null, selected: null as Voucher | null, query: undefined as undefined | { queryKey: unknown[]; queryFn: (context: { pageParam: number }) => Promise<unknown> }, mutation: undefined as undefined | { mutationFn: (voucher: Voucher) => Promise<unknown>; onSuccess: () => Promise<void> }, cards: [] as { voucher: Voucher; onClaim: () => void; onDetails: () => void }[], request: vi.fn(), push: vi.fn(), mutate: vi.fn(), invalidate: vi.fn() }));
 const voucher: Voucher = { id: 'shop-coupon', code: 'SHOP', name: 'Ưu đãi shop', description: '', discountType: 'FIXED', discountValue: 20000, maxDiscount: null, minOrderAmount: 100000, expiresAt: '2099-01-01', claimed: false, storeId: 'shop-a', storeName: 'Shop A' };
-vi.mock('react-native', () => ({ View: 'div', Text: 'span', ScrollView: 'div', Modal: () => null, Pressable: 'button', useWindowDimensions: () => ({ width: 1280 }) }));
+vi.mock('react', async importOriginal => {
+  const actual = await importOriginal<typeof import('react')>();
+  return { ...actual, useState: (initial: unknown) => initial === null
+    ? [state.selected, (value: Voucher | null) => { state.selected = value; }]
+    : actual.useState(initial) };
+});
+vi.mock('react-native', () => ({ View: 'div', Text: 'span', ScrollView: 'div', Modal: ({ children, visible }: { children: React.ReactNode; visible: boolean }) => visible ? <section>{children}</section> : null, Pressable: 'button', useWindowDimensions: () => ({ width: 1280 }) }));
 vi.mock('expo-router', () => ({ router: { push: state.push } }));
 vi.mock('lucide-react-native', () => ({ X: () => null }));
 vi.mock('../src/components/common/ui', () => ({ Button: () => null, Empty: () => null, Status: () => null }));
@@ -14,7 +20,16 @@ vi.mock('../src/services/api', () => ({ request: state.request }));
 vi.mock('../src/stores/auth', () => ({ useAuth: (select: (s: typeof state) => unknown) => select(state), queryClient: { invalidateQueries: state.invalidate } }));
 vi.mock('../src/theme', () => ({ colors: {}, styles: {}, money: String }));
 vi.mock('@tanstack/react-query', () => ({ useInfiniteQuery: (options: typeof state.query) => { state.query = options; return { data: { pages: [{ items: [voucher] }] }, isLoading: false }; }, useMutation: (options: typeof state.mutation) => { state.mutation = options; return { mutate: state.mutate, isPending: false }; } }));
-beforeEach(() => { vi.clearAllMocks(); state.user = null; state.cards = []; state.query = undefined; state.mutation = undefined; });
+beforeEach(() => { vi.clearAllMocks(); state.user = null; state.selected = null; state.cards = []; state.query = undefined; state.mutation = undefined; });
+it('opens shop conditions with the same issuer, benefit and terms as discovery and the wallet', () => {
+  renderToStaticMarkup(<ShopVouchers storeId="shop-a" />);
+  state.cards[0].onDetails();
+  const html = renderToStaticMarkup(<ShopVouchers storeId="shop-a" />);
+  expect(html).toContain('Voucher của shop: Shop A');
+  expect(html).toContain('Giảm 20.000đ');
+  expect(html).toContain('tính trên sản phẩm đủ điều kiện của shop.');
+  expect(html).toContain('Hạn sử dụng:');
+});
 it('loads only the current shop vouchers and requires login to collect', async () => {
   renderToStaticMarkup(<ShopVouchers storeId="shop-a" />); await state.query!.queryFn({ pageParam: 2 });
   expect(state.query!.queryKey).toEqual(['vouchers', 'shop', 'shop-a', 'guest']);

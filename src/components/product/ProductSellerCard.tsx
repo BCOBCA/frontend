@@ -17,6 +17,8 @@ export function ProductSellerCard({ seller }: { seller: ProductSeller }) {
   const dealer = detail.data?.dealer.id === seller.id ? detail.data.dealer : undefined;
   const name = dealer?.name ?? seller.name;
   const logo = dealer?.logoUrl ?? seller.logoUrl;
+  const rating = dealer?.averageRating;
+  const hasRating = typeof rating === 'number' && Number.isFinite(rating) && (dealer?.reviewCount ?? 0) > 0;
   return <View style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 16, gap: 18 }}>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
       <View style={{ width: 52, height: 52, borderRadius: 26, overflow: 'hidden' }}><DealerImage key={logo} uri={logo} logo /></View>
@@ -26,12 +28,12 @@ export function ProductSellerCard({ seller }: { seller: ProductSeller }) {
       </View>
     </View>
     <View style={{ flexDirection: 'row', paddingVertical: 2 }}>
-      <View style={{ flex: 1, alignItems: 'center', gap: 7 }}><Text style={{ fontSize: 12, color: colors.muted }}>Đánh giá</Text><View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Text style={{ fontSize: 12, color: colors.muted }}>Chưa có</Text><Star size={14} color="#B8BEC8" /></View></View>
+      <View style={{ flex: 1, alignItems: 'center', gap: 7 }}><Text style={{ fontSize: 12, color: colors.muted }}>Đánh giá</Text><View accessibilityLabel={hasRating ? `${rating.toLocaleString('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} trên 5 sao từ ${dealer?.reviewCount} đánh giá` : undefined} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Text style={{ fontSize: hasRating ? 16 : 12, fontWeight: hasRating ? '700' : '400', color: hasRating ? colors.text : colors.muted }}>{hasRating ? rating.toLocaleString('vi-VN', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : dealer ? 'Chưa có' : '—'}</Text><Star size={14} color={hasRating ? '#F59E0B' : '#B8BEC8'} fill={hasRating ? '#F59E0B' : 'none'} /></View></View>
       <View style={{ flex: 1, alignItems: 'center', gap: 7, borderLeftWidth: 1, borderColor: colors.border }}><Text style={{ fontSize: 12, color: colors.muted }}>Sản phẩm</Text><Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>{products.data?.totalItems.toLocaleString('vi-VN') ?? '—'}</Text></View>
     </View>
     <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
-      <Pressable accessibilityRole="button" accessibilityLabel={`Xem gian hàng ${name}`} onPress={() => router.push({ pathname: '/dai-ly/[slug]', params: { slug: seller.slug, tab: 'products' } })} style={({ pressed }) => ({ flex: 1.15, minHeight: 40, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center', borderRadius: 7, borderWidth: 1, borderColor: colors.primary, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 })}><Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700' }}>Xem gian hàng</Text></Pressable>
-      <View style={{ flex: 1 }}>{dealer ? <FollowButton dealer={dealer} solid /> : <View accessibilityState={{ disabled: true }} style={{ minHeight: 40, borderRadius: 7, backgroundColor: colors.primary, opacity: 0.5, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '700' }}>Theo dõi</Text></View>}</View>
+      <Pressable accessibilityRole="button" accessibilityLabel={`Xem gian hàng ${name}`} hitSlop={6} onPress={() => router.push({ pathname: '/dai-ly/[slug]', params: { slug: seller.slug, tab: 'products' } })} style={({ pressed }) => ({ flex: 1.15, minHeight: 32, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center', borderRadius: 6, borderWidth: 1, borderColor: colors.primary, backgroundColor: colors.surface, opacity: pressed ? 0.7 : 1 })}><Text style={{ color: colors.primary, fontSize: 11, fontWeight: '600' }}>Xem gian hàng</Text></Pressable>
+      <View style={{ flex: 1 }}>{dealer ? <FollowButton dealer={dealer} solid /> : <View accessibilityState={{ disabled: true }} style={{ minHeight: 32, borderRadius: 6, backgroundColor: colors.primary, opacity: 0.5, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '600' }}>Theo dõi</Text></View>}</View>
     </View>
     <Status error={detail.error || products.error} retry={() => { void detail.refetch(); void products.refetch(); }} />
   </View>;

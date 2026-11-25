@@ -2,10 +2,11 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, expect, it, vi } from 'vitest';
 import Orders from '../app/orders';
+vi.mock('../src/components/orders/ReviewDialog', () => ({ ReviewDialog: () => null }));
 
-const state = vi.hoisted(() => ({ request: vi.fn(), invalidate: vi.fn(), mutate: vi.fn(), copy: vi.fn(), card: undefined as undefined | { onCopy: () => Promise<void>; onCancel: () => void }, mutation: undefined as undefined | { mutationFn: (input: { id: string; reason: string }) => unknown; onSuccess: (result: unknown, input: { id: string; reason: string }) => Promise<void> }, query: undefined as undefined | { queryKey: unknown[]; queryFn: () => unknown } }));
+const state = vi.hoisted(() => ({ request: vi.fn(), invalidate: vi.fn(), mutate: vi.fn(), copy: vi.fn(), push: vi.fn(), card: undefined as undefined | { onCopy: () => Promise<void>; onCancel: () => void; onReview: () => void }, mutation: undefined as undefined | { mutationFn: (input: { id: string; reason: string }) => unknown; onSuccess: (result: unknown, input: { id: string; reason: string }) => Promise<void> }, query: undefined as undefined | { queryKey: unknown[]; queryFn: () => unknown } }));
 vi.mock('../src/components/orders/CancelOrderForm', () => ({ CancelOrderForm: () => null }));
-vi.mock('expo-router', () => ({ router: { push: vi.fn() }, useLocalSearchParams: () => ({ checkoutGroupId: 'checkout-group' }) }));
+vi.mock('expo-router', () => ({ router: { push: state.push }, useLocalSearchParams: () => ({ checkoutGroupId: 'checkout-group' }) }));
 vi.mock('react-native', () => ({ View: 'div', Text: 'span', Pressable: ({ children }: { children: React.ReactNode }) => <button>{children}</button> }));
 vi.mock('../src/theme', () => ({ styles: {}, money: (v: number) => `${v} VNĐ`, dateTime: () => '11/11/2026' }));
 vi.mock('../src/components/common/ui', () => ({ Page: ({ children, title }: { children: React.ReactNode; title: string }) => <main><h1>{title}</h1>{children}</main>, Button: () => null, Empty: () => null, LoginNotice: () => null, Status: () => null }));
@@ -37,4 +38,10 @@ it('copies the real code and cancels only the selected order with related cache 
   await state.mutation!.onSuccess(undefined, input);
   for (const key of ['orders', 'membership', 'vouchers', 'notifications']) expect(state.invalidate).toHaveBeenCalledWith({ queryKey: [key] });
   expect(state.invalidate).toHaveBeenCalledWith({ queryKey: ['order', 'member', 'a'] });
+});
+
+it('opens review editing in place without navigating away from the order list', () => {
+  renderToStaticMarkup(<Orders />);
+  state.card!.onReview();
+  expect(state.push).not.toHaveBeenCalled();
 });

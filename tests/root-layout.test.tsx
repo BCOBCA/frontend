@@ -22,6 +22,7 @@ vi.mock('@tanstack/react-query', () => ({ QueryClientProvider: ({ children }: { 
 vi.mock('../src/stores/auth', () => ({ queryClient: {}, useAuth: Object.assign((select: (auth: typeof state.auth) => unknown) => select(state.auth), { getState: () => state.auth }) }));
 vi.mock('../src/components/common/ui', () => ({ Button: ({ title }: { title: string }) => <button>{title}</button> }));
 vi.mock('../src/components/common/GlobalToastHost', () => ({ GlobalToastHost: () => null }));
+vi.mock('../src/components/common/FloatingActions', () => ({ FloatingActions: () => <aside>Floating actions</aside> }));
 vi.mock('../src/services/api', () => ({ ensureFreshSession: vi.fn(), errorMessage: () => 'Không thể kết nối máy chủ.' }));
 vi.mock('../src/services/session-maintenance', () => ({ startSessionMaintenance: vi.fn() }));
 vi.mock('../src/services/use-live-notifications', () => ({ useLiveNotifications: vi.fn() }));
@@ -39,12 +40,14 @@ it.each(['initial', 'restoring', 'error', 'retry'] as const)('keeps the root nav
   const html = renderToStaticMarkup(<RootLayout />);
   expect(html).toContain('data-navigator="mounted"');
   expect(html).not.toContain('Route content');
+  expect(html).not.toContain('Floating actions');
   expect(html).toContain(phase === 'error' ? 'Kết nối lại' : 'Đang khôi phục phiên đăng nhập');
 });
 
 it.each([null, { id: 'user', accountId: 'account' }])('renders routes after session restoration for guest/user %j', user => {
   Object.assign(state.auth, { ready: true, user });
   expect(renderToStaticMarkup(<RootLayout />)).toContain('Route content');
+  expect(renderToStaticMarkup(<RootLayout />)).toContain('Floating actions');
 });
 
 it('keeps routes available while recovering an existing signed-in session', () => {

@@ -37,6 +37,14 @@ it('shows conditions and dates without the voucher code or copy action, and supp
   state.actions['Đóng điều kiện ưu đãi'](); state.actions['Đóng nền điều kiện ưu đãi'](); state.close(); expect(close).toHaveBeenCalledTimes(3);
   state.actions['Mua sắm ngay'](); expect(shop).toHaveBeenCalledOnce();
 });
+it('identifies the issuing shop in personal voucher details after collection', () => {
+  const html = renderToStaticMarkup(<OwnedOfferDetails item={{ ...item, pointCost: 0, storeId: 'shop-qq', storeName: 'Cửa hàng QQ' }} onClose={vi.fn()} onShop={vi.fn()} />);
+  expect(html).toContain('Voucher của shop: Cửa hàng QQ');
+  expect(html).toContain('tính trên sản phẩm đủ điều kiện của shop.');
+  expect(html).toContain('Giảm 15%');
+  expect(html).toContain('Đã thu thập');
+  expect(html).not.toContain('Voucher của nền tảng');
+});
 it.each([{ loading: true }, { loading: false, error: new Error('offline') }])('does not mistake loading/failure for an empty wallet', status => {
   expect(renderToStaticMarkup(<MyOffersView {...props} {...status} items={[]} />)).not.toContain('Bạn chưa có ưu đãi còn dùng được');
 });

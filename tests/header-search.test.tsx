@@ -2,6 +2,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Header } from '../src/components/common/ui';
+vi.mock('../src/services/use-unread-notifications', () => ({ useUnreadNotifications: () => false }));
 
 const state = vi.hoisted(() => ({ width: 1200, navigate: vi.fn(), submit: undefined as undefined | ((event: { nativeEvent: { text: string } }) => void), actions: {} as Record<string, () => void> }));
 vi.mock('react-native', () => {

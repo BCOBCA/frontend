@@ -27,8 +27,8 @@ export function FollowButton({ dealer, solid = false }: { dealer: Dealer; solid?
     <Pressable accessibilityRole="button" accessibilityLabel={`${dealer.isFollowing ? 'Bỏ theo dõi' : 'Theo dõi'} ${dealer.name}`} accessibilityState={{ disabled: follow.isPending, selected: dealer.isFollowing }} disabled={follow.isPending}
       onPress={event => { event.stopPropagation(); if (!user) { router.push('/login'); return; } follow.mutate(); }}
       hitSlop={8}
-      style={({ pressed }) => ({ minHeight: solid ? 40 : 28, borderRadius: solid ? 7 : 14, borderWidth: 1, borderColor: colors.primary, paddingHorizontal: solid ? 5 : 8, flexDirection: 'row', gap: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: solid && !dealer.isFollowing ? colors.primary : dealer.isFollowing ? '#FFF0EE' : 'white', opacity: pressed || follow.isPending ? 0.6 : 1 })}>
-      {dealer.isFollowing && <Check size={12} color={colors.primary} />}<Text style={{ color: solid && !dealer.isFollowing ? '#FFFFFF' : colors.primary, fontWeight: '700', fontSize: 11 }}>{follow.isPending ? 'Đang xử lý…' : dealer.isFollowing ? 'Đang theo dõi' : 'Theo dõi'}</Text>
+      style={({ pressed }) => ({ minHeight: solid ? 32 : 28, borderRadius: solid ? 6 : 14, borderWidth: 1, borderColor: colors.primary, paddingHorizontal: solid ? 5 : 8, flexDirection: 'row', gap: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: solid && !dealer.isFollowing ? colors.primary : dealer.isFollowing ? '#FFF0EE' : 'white', opacity: pressed || follow.isPending ? 0.6 : 1 })}>
+      {dealer.isFollowing && <Check size={12} color={colors.primary} />}<Text style={{ color: solid && !dealer.isFollowing ? '#FFFFFF' : colors.primary, fontWeight: solid ? '600' : '700', fontSize: 11 }}>{follow.isPending ? 'Đang xử lý…' : dealer.isFollowing ? 'Đang theo dõi' : 'Theo dõi'}</Text>
     </Pressable>
     {follow.error && <Text accessibilityRole="alert" style={{ color: colors.primary, fontSize: 11 }}>{errorMessage(follow.error)}</Text>}
   </View>;

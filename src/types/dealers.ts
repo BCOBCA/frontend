@@ -1,6 +1,7 @@
 export type Dealer = {
   id: string; name: string; slug: string; logoUrl: string; coverUrl: string; description: string;
   isVerified: boolean; followerCount: number; locationLabel: string; provinces?: string | null; branchCount: number; isFollowing: boolean;
+  averageRating?: number | null; reviewCount?: number; productCount?: number;
 };
 export type DealerProfile = { id: string; name: string; provinces: string | null; categoryIds?: string[] };
 export type DealerCategory = { id: string; name: string };

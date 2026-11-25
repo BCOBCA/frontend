@@ -3,7 +3,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Page } from '../src/components/common/ui';
 
-const state = vi.hoisted(() => ({ width: 390, segments: [] as string[], actions: {} as Record<string, () => void>, navigate: vi.fn() }));
+const state = vi.hoisted(() => ({ width: 390, unread: false, segments: [] as string[], actions: {} as Record<string, () => void>, navigate: vi.fn() }));
+vi.mock('../src/services/use-unread-notifications', () => ({ useUnreadNotifications: () => state.unread }));
 vi.mock('react-native', () => {
   const Container = ({ children }: { children?: React.ReactNode }) => <div>{children}</div>;
   return { View: ({ children, accessibilityRole, accessibilityLabel }: { children: React.ReactNode; accessibilityRole?: string; accessibilityLabel?: string }) => <div role={accessibilityRole} aria-label={accessibilityLabel}>{children}</div>, Text: Container, ScrollView: Container, Image: () => null, ActivityIndicator: () => null, TextInput: () => <input />, useWindowDimensions: () => ({ width: state.width }),
@@ -17,9 +18,15 @@ vi.mock('expo-router', () => ({ Link: ({ children, href }: { children: React.Rea
 vi.mock('lucide-react-native', () => Object.fromEntries(['ArrowLeft', 'Bell', 'Search', 'House', 'LayoutGrid', 'TicketPercent', 'ShoppingCart', 'UserRound'].map(name => [name, () => null])));
 vi.mock('../src/theme', () => ({ colors: {}, styles: {} }));
 vi.mock('../src/services/api', () => ({ errorMessage: () => '' }));
-beforeEach(() => { state.width = 390; state.segments = []; state.actions = {}; state.navigate.mockClear(); });
+beforeEach(() => { state.width = 390; state.unread = false; state.segments = []; state.actions = {}; state.navigate.mockClear(); });
 
 describe('mobile navigation on member subpages', () => {
+  it.each([390, 1280])('shows the bell indicator only while unread notifications exist at %ipx', width => {
+    state.width = width; state.unread = true;
+    expect(renderToStaticMarkup(<Page title="Thông báo" back />)).toContain('Có thông báo chưa đọc');
+    state.unread = false;
+    expect(renderToStaticMarkup(<Page title="Thông báo" back />)).not.toContain('Có thông báo chưa đọc');
+  });
   it('shows the shared header and all five footer destinations on small screens', () => {
     const html = renderToStaticMarkup(<Page title="Địa chỉ nhận hàng" back footerTab="member"><span>Danh sách địa chỉ</span></Page>);
     expect(html).toContain('aria-label="Tìm kiếm"');

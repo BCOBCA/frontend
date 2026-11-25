@@ -2,6 +2,15 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { parseLiveBatch, startNotificationStream } from '../src/services/notification-stream';
 const item = (id: string) => ({ id, title: 'Order', body: 'Status', targetType: 'Order', targetId: 'o1', readAt: null, createdAt: '2026-11-18T00:00:00Z' });
 afterEach(() => vi.useRealTimers());
+it('refreshes unread state when existing notifications are read elsewhere without replaying toasts', async () => {
+  vi.useFakeTimers();
+  const onChange = vi.fn(), onNotification = vi.fn();
+  const load = vi.fn().mockResolvedValueOnce({ head: 'a', items: [item('a')] }).mockResolvedValue({ head: 'a', items: [{ ...item('a'), readAt: '2026-11-21T02:00:00Z' }] });
+  const stop = startNotificationStream({ load, onChange, onNotification });
+  await vi.advanceTimersByTimeAsync(1000);
+  expect(onChange).toHaveBeenCalledTimes(2); expect(onNotification).not.toHaveBeenCalled();
+  stop();
+});
 it('deduplicates replayed events and preserves chronological delivery', async () => {
   vi.useFakeTimers();
   const onNotification = vi.fn(), onChange = vi.fn();

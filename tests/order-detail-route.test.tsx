@@ -31,14 +31,15 @@ it('keeps cancellation contract and refreshes the order/history and restored vou
   expect(state.request).toHaveBeenCalledWith('POST', '/orders/order-id/cancel', { reason: 'Không còn nhu cầu mua' }); expect(state.refetch).toHaveBeenCalledOnce();
   for (const key of ['orders', 'membership', 'vouchers', 'notifications']) expect(state.invalidate).toHaveBeenCalledWith({ queryKey: [key] });
 });
-it('preserves review, refund and store navigation', () => {
+it('keeps reviews in place and preserves refund and store navigation', () => {
   renderToStaticMarkup(<OrderDetail />);
   state.props!.onReview({ id: 'item', productName: 'Tai nghe' } as OrderItem);
   state.props!.onRefund(); state.props!.onStore('phong-vu');
-  expect(state.push).toHaveBeenCalledWith({ pathname: '/review/[id]', params: { id: 'item', name: 'Tai nghe' } });
+  expect(state.push).not.toHaveBeenCalledWith(expect.objectContaining({ pathname: '/review/[id]' }));
   expect(state.push).toHaveBeenCalledWith({ pathname: '/refund/[id]', params: { id: 'order-id' } });
   expect(state.push).toHaveBeenCalledWith({ pathname: '/dai-ly/[slug]', params: { slug: 'phong-vu' } });
 });
 it('requires login and does not fetch/render an order for guests', () => {
   state.user = null; expect(renderToStaticMarkup(<OrderDetail />)).toContain('Đăng nhập'); expect(state.enabled).toBe(false); expect(state.props).toBeUndefined();
 });
+vi.mock('../src/components/orders/ReviewDialog', () => ({ ReviewDialog: () => null }));

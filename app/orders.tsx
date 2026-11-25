@@ -1,3 +1,4 @@
+import { ReviewDialog } from '../src/components/orders/ReviewDialog';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -19,6 +20,7 @@ export default function Orders() {
   const user = useAuth(state => state.user); const [page, setPage] = useState(1);
   const [copied, setCopied] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [reviewingOrder, setReviewingOrder] = useState<OrderSummary | null>(null);
   const showToast = useToast(state => state.show);
   const query = useQuery({ queryKey: ['orders', user?.id, page, status, checkoutGroupId], queryFn: () => request<Page<OrderSummary>>('GET', `/orders?page=${page}${status ? `&status=${encodeURIComponent(status)}` : ''}${checkoutGroupId ? `&checkoutGroupId=${encodeURIComponent(checkoutGroupId)}` : ''}`), enabled: !!user });
   const cancel = useMutation({
@@ -35,11 +37,11 @@ export default function Orders() {
     try { await Clipboard.setStringAsync(order.orderCode); setCopied(order.id); showToast('Đã sao chép mã đơn hàng.'); }
     catch { showToast('Chưa sao chép được mã đơn. Vui lòng thử lại.', 'error'); }
   };
-  return <PageView title={checkoutGroupId ? 'Đơn hàng vừa đặt' : status ? statusLabel[status] ?? 'Đơn hàng' : 'Đơn hàng của tôi'} back footerTab="member">{!user ? <LoginNotice /> : <View style={s.padded}><Status loading={query.isLoading} error={query.error} retry={() => void query.refetch()} />{query.data?.items.length === 0 && <Empty text="Chưa có đơn hàng" />}
+  return <PageView title={checkoutGroupId ? 'Đơn hàng vừa đặt' : status ? statusLabel[status] ?? 'Đơn hàng' : 'Đơn hàng của tôi'} back footerTab="member">{!user ? <LoginNotice /> : <View style={s.padded}>{!!reviewingOrder?.items?.length && <ReviewDialog key={`${user.id}/${reviewingOrder.id}`} items={reviewingOrder.items} onDismiss={() => setReviewingOrder(null)} />}<Status loading={query.isLoading} error={query.error} retry={() => void query.refetch()} />{query.data?.items.length === 0 && <Empty text="Chưa có đơn hàng" />}
     {query.data?.items.map(order => <View key={order.id} style={{ gap: 10 }}><OrderListCard order={order} busy={cancel.isPending && cancel.variables?.id === order.id} copied={copied === order.id}
       onCopy={() => void copy(order)} onDetails={() => details(order.id)}
       onCancel={() => { if (!cancel.isPending && !query.isFetching) { cancel.reset(); setCancellingId(order.id); } }}
-      onReview={() => { const item = order.items?.length === 1 ? order.items[0] : null; if (item) router.push({ pathname: '/review/[id]', params: { id: item.id, name: item.productName } }); else details(order.id); }}
+      onReview={() => setReviewingOrder(order)}
       onBuyAgain={() => { const productId = order.items?.[0]?.productId; if (productId) router.push({ pathname: '/product/[id]', params: { id: productId } }); else details(order.id); }}
       onStore={slug => router.push({ pathname: '/dai-ly/[slug]', params: { slug } })} />
       {cancellingId === order.id && order.status === 'PENDING' && order.paymentStatus === 'UNPAID' && <CancelOrderForm key={`${user?.id}/${order.id}`} busy={cancel.isPending || query.isFetching} error={cancel.error ? errorMessage(cancel.error) : undefined} onDismiss={() => { if (!cancel.isPending) setCancellingId(null); }} onSubmit={reason => { if (!cancel.isPending && !query.isFetching) cancel.mutate({ id: order.id, reason }); }} />}

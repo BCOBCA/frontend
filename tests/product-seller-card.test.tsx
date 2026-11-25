@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProductSellerCard } from '../src/components/product/ProductSellerCard';
 
-const state = vi.hoisted(() => ({ verified: false, following: false, count: 0 as number | undefined, ready: true, pending: false }));
+const state = vi.hoisted(() => ({ verified: false, following: false, count: 0 as number | undefined, ready: true, pending: false, averageRating: null as number | null, reviewCount: 0 }));
 vi.mock('react-native', () => {
   const Box = ({ children, accessibilityLabel, disabled }: { children?: React.ReactNode; accessibilityLabel?: string; disabled?: boolean }) => <div aria-label={accessibilityLabel} aria-disabled={disabled}>{children}</div>;
   return { View: Box, Text: Box, Pressable: Box, Image: () => null };
@@ -16,14 +16,21 @@ vi.mock('../src/services/api', () => ({ request: vi.fn(), errorMessage: () => 'E
 vi.mock('../src/services/dealers', () => ({ getDealer: vi.fn(), followDealer: vi.fn() }));
 vi.mock('../src/components/common/ui', () => ({ Status: () => null }));
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: ({ queryKey }: { queryKey: string[] }) => ({ data: queryKey[0] === 'dealer' ? state.ready ? { dealer: { id: 'store-1', name: 'Cửa hàng thực tế', logoUrl: '', slug: 'store-1', isVerified: state.verified, isFollowing: state.following } } : undefined : state.count === undefined ? undefined : { totalItems: state.count }, error: null }),
+  useQuery: ({ queryKey }: { queryKey: string[] }) => ({ data: queryKey[0] === 'dealer' ? state.ready ? { dealer: { id: 'store-1', name: 'Cửa hàng thực tế', logoUrl: '', slug: 'store-1', isVerified: state.verified, isFollowing: state.following, averageRating: state.averageRating, reviewCount: state.reviewCount } } : undefined : state.count === undefined ? undefined : { totalItems: state.count }, error: null }),
   useMutation: () => ({ isPending: state.pending, error: null }),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
 const seller = { id: 'store-1', name: 'Cửa hàng thực tế', slug: 'store-1', logoUrl: '', description: 'Store description', phone: null };
 
 describe('product seller reference card', () => {
-  beforeEach(() => { state.verified = false; state.following = false; state.count = 0; state.ready = true; state.pending = false; });
+  beforeEach(() => { state.verified = false; state.following = false; state.count = 0; state.ready = true; state.pending = false; state.averageRating = null; state.reviewCount = 0; });
+  it('shows the shop average rounded to one decimal and exposes the review count', () => {
+    state.averageRating = 4.25; state.reviewCount = 12;
+    const html = renderToStaticMarkup(<ProductSellerCard seller={seller} />);
+    expect(html).toContain('>4,3<');
+    expect(html).toContain('4,3 trên 5 sao từ 12 đánh giá');
+    expect(html).not.toContain('Chưa có');
+  });
   it('shows real store identity, zero products and actions without join date or invented ratings', () => {
     const html = renderToStaticMarkup(<ProductSellerCard seller={seller} />);
     expect(html).toContain('Cửa hàng thực tế');

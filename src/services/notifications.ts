@@ -52,6 +52,7 @@ export async function markAllNotificationsRead(items: Notification[], mark: (id:
 }
 
 export function notificationTarget(item: Notification) {
+  if (item.targetType?.toLowerCase() === 'review' && item.targetId) return { pathname: '/review/[id]' as const, params: { id: item.targetId } };
   if (item.targetType?.toLowerCase() === 'order' && item.targetId) return { pathname: '/order/[id]' as const, params: { id: item.targetId } };
   return null;
 }

@@ -9,8 +9,15 @@ import { DESKTOP_HEADER_WIDTH, primaryTabs } from '../../navigation/tabs';
 import { PrimaryTabFooter } from '../../navigation/PrimaryTabFooter';
 import { productSearchHref } from '../../services/product-search';
 import { HeaderSearchPopover } from './HeaderSearchPopover';
+import { useUnreadNotifications } from '../../services/use-unread-notifications';
 
 const headerLinks = [...primaryTabs.slice(0, -1), { href: '/notifications', title: 'Thông báo', Icon: Bell } as const, ...primaryTabs.slice(-1)];
+
+function NotificationBell({ unread, size = 22 }: { unread: boolean; size?: number }) {
+  return <View style={{ position: 'relative' }}><Bell color={colors.surface} size={size} strokeWidth={1.7} aria-hidden />
+    {unread && <View accessibilityLabel="Có thông báo chưa đọc" style={{ position: 'absolute', top: -2, right: -3, width: 9, height: 9, borderRadius: 5, borderWidth: 2, borderColor: colors.primary, backgroundColor: '#FFE18A' }} />}
+  </View>;
+}
 
 export function Button({ title, onPress, disabled, outline, black }: { title: string; onPress: () => void; disabled?: boolean; outline?: boolean; black?: boolean }) {
   return <Pressable accessibilityRole="button" accessibilityState={{ disabled: !!disabled }} disabled={disabled} onPress={onPress}
@@ -37,6 +44,7 @@ export function Page({ children, title, back, search, searchPlaceholder, onSearc
 export function Header({ title, back, search, searchPlaceholder, onSearch, onSubmitSearch }: { title: string; back?: boolean; search?: string; searchPlaceholder?: string; onSearch?: (v: string) => void; onSubmitSearch?: (value: string) => void }) {
   const { width } = useWindowDimensions();
   const wide = width >= DESKTOP_HEADER_WIDTH;
+  const hasUnread = useUnreadNotifications();
   const compactSearch = !wide && !!back && !onSearch;
   const insets = useSafeAreaInsets();
   const header = useRef<ComponentRef<typeof View>>(null);
@@ -73,14 +81,14 @@ export function Header({ title, back, search, searchPlaceholder, onSearch, onSub
     <View style={[s.row, { minWidth: 0, flex: compactSearch ? 1 : undefined, flexShrink: wide ? 0 : back ? 1 : 0, width: wide ? 240 : back && !compactSearch ? '100%' : undefined, marginRight: wide ? 32 : back ? 0 : 4 }]}>{back ? <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" onPress={() => router.canGoBack() ? router.back() : router.replace('/')} style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><ArrowLeft color={colors.surface} size={24} /></Pressable> : <Link href="/" asChild><Pressable accessibilityRole="link" accessibilityLabel="Báo chí Online BCA - Trang chủ" style={{ width: wide ? 48 : 40, height: wide ? 48 : 40, borderRadius: 24, overflow: 'hidden', flexShrink: 0 }}><Image source={require('../../../assets/logo-baochi.png')} resizeMode="contain" style={{ width: '100%', height: '100%', transform: [{ scale: 1.12 }, { translateY: 0.5 }] }} /></Pressable></Link>}
       {(wide || back) && <Text numberOfLines={1} accessibilityRole="header" style={{ color: colors.surface, fontSize: 16, fontWeight: '700', flexShrink: 1 }}>{back ? title : 'Báo chí Online BCA'}</Text>}</View>
     {compactSearch ? <Pressable ref={searchTrigger} accessibilityRole="button" accessibilityLabel="Tìm kiếm" accessibilityState={{ expanded: searchOpen }} aria-expanded={searchOpen} onPress={toggleSearch} style={({ pressed }) => ({ width: 44, height: 44, flexShrink: 0, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: searchOpen ? '#FFFFFF24' : 'transparent', opacity: pressed ? 0.65 : 1 })}><Search color={colors.surface} size={22} strokeWidth={1.8} aria-hidden /></Pressable> : <View style={[s.row, { flex: 1, maxWidth: wide ? 400 : undefined, minWidth: 0, gap: 8, backgroundColor: colors.surface, borderRadius: 10, paddingHorizontal: wide ? 12 : 10 }]}><Pressable accessibilityRole="button" accessibilityLabel="Tìm kiếm" hitSlop={6} onPress={() => submit(onSearch ? search ?? '' : submittedSearch)} style={{ minWidth: 24, minHeight: 36, alignItems: 'center', justifyContent: 'center' }}><Search color={colors.text} size={wide ? 20 : 18} /></Pressable><TextInput accessibilityLabel={searchPlaceholder ?? "Tìm kiếm sản phẩm"} placeholder={searchPlaceholder ?? "Tìm kiếm sản phẩm ..."} value={onSearch ? search : submittedSearch} onChangeText={onSearch ?? setSubmittedSearch} onSubmitEditing={event => submit(event.nativeEvent.text)} maxLength={200} style={{ flex: 1, minWidth: 0, height: 36, paddingVertical: wide ? 8 : 6, fontSize: 14, color: colors.text }} returnKeyType="search" /></View>}
-    {!wide && <Pressable accessibilityRole="button" accessibilityLabel="Thông báo" onPress={() => router.push('/notifications')}
+    {!wide && <Pressable accessibilityRole="button" accessibilityLabel={hasUnread ? 'Thông báo, có thông báo chưa đọc' : 'Thông báo'} onPress={() => router.push('/notifications')}
       style={({ pressed }) => ({ width: 44, height: 44, alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: 8, opacity: pressed ? 0.65 : 1 })}>
-      <Bell color={colors.surface} size={23} strokeWidth={1.8} />
+      <NotificationBell unread={hasUnread} size={23} />
     </Pressable>}
     {wide && <View role="navigation" accessibilityLabel="Điều hướng chính" style={{ flex: 1, minWidth: 520, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', gap: 8 }}>
       {headerLinks.map(({ href, title: label, Icon }) => <Link key={href} href={href} asChild aria-current={pathname === href ? 'page' : undefined}>
-        <Pressable accessibilityRole="link" accessibilityLabel={label} style={{ flex: 1, maxWidth: 104, alignItems: 'center', justifyContent: 'center', gap: 4, height: 48, minWidth: 80, paddingHorizontal: 8, borderRadius: 8, backgroundColor: pathname === href ? '#FFFFFF24' : 'transparent' }}>
-          <Icon color={colors.surface} size={22} strokeWidth={1.7} />
+        <Pressable accessibilityRole="link" accessibilityLabel={href === '/notifications' && hasUnread ? 'Thông báo, có thông báo chưa đọc' : label} style={{ flex: 1, maxWidth: 104, alignItems: 'center', justifyContent: 'center', gap: 4, height: 48, minWidth: 80, paddingHorizontal: 8, borderRadius: 8, backgroundColor: pathname === href ? '#FFFFFF24' : 'transparent' }}>
+          {href === '/notifications' ? <NotificationBell unread={hasUnread} /> : <Icon color={colors.surface} size={22} strokeWidth={1.7} />}
           <Text numberOfLines={1} style={{ color: colors.surface, fontSize: 12, lineHeight: 16, textAlign: 'center', fontWeight: pathname === href ? '700' : '600' }}>{label}</Text>
         </Pressable>
       </Link>)}

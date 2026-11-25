@@ -68,6 +68,15 @@ it('allows reviews and refund requests only in their supported states', () => {
   state.actions['Yêu cầu hoàn tiền'](); state.actions['Đánh giá Tai nghe']();
   expect(c.onRefund).toHaveBeenCalledOnce(); expect(c.onReview).toHaveBeenCalledWith(order.items[0]);
 });
+it('opens submitted product reviews through the viewing action', () => {
+  const c = callbacks();
+  const reviewed = { ...order.items[0], hasReview: true };
+  const html = renderToStaticMarkup(<OrderDetailView order={{ ...order, status: 'COMPLETED', items: [reviewed] }} {...c} />);
+  expect(html).toContain('Xem đánh giá');
+  expect(state.actions['Đánh giá Tai nghe']).toBeUndefined();
+  state.actions['Xem đánh giá Tai nghe']();
+  expect(c.onReview).toHaveBeenCalledWith(reviewed);
+});
 it.each(['busy', 'paid', 'refreshing'])('blocks cancellation when %s', mode => {
   renderToStaticMarkup(<OrderDetailView order={{ ...order, paymentStatus: mode === 'paid' ? 'PAID' : 'UNPAID' }} busy={mode === 'busy'} refreshing={mode === 'refreshing'} {...callbacks()} />);
   expect(state.actions['Hủy đơn hàng']).toBeUndefined();

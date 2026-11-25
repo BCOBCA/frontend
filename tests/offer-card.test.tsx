@@ -19,6 +19,23 @@ const voucher: Voucher = { id: 'voucher-a', name: 'Giảm 20.000đ', code: 'SAVE
 const render = (item: Voucher, busy = false) => renderToStaticMarkup(<OfferCard voucher={item} width={300} busy={busy} onClaim={vi.fn()} onDetails={vi.fn()} />);
 
 describe('voucher collection state', () => {
+  it.each([false, true])('keeps shop identity and order terms on the same reward card before/after collection: %s', owned => {
+    const html = renderToStaticMarkup(<OfferCard voucher={{ ...voucher, pointCost: 500, storeId: 'shop-qq', storeName: 'Cửa hàng QQ', claimed: owned }} owned={owned} width={300} busy={false} onClaim={vi.fn()} onDetails={vi.fn()} />);
+    expect(html).toContain('Cửa hàng QQ');
+    expect(html).toContain('Đơn từ 200.000đ');
+    expect(html).toContain(owned ? 'Đã đổi 500 điểm' : 'Đổi 500 điểm');
+  });
+  it.each([0, 500])('derives the fixed discount title from its value for %i point cost', pointCost => {
+    const html = render({ ...voucher, name: 'hahahahaha', discountValue: 20000, pointCost });
+    expect(html).toContain('Giảm 20.000đ');
+    expect(html).not.toContain('hahahahaha');
+  });
+  it('derives the percentage title from its rate rather than its cap', () => {
+    const html = render({ ...voucher, name: 'OLD_PROGRAM', discountType: 'PERCENT', discountValue: 15, maxDiscount: 50000 });
+    expect(html).toContain('Giảm 15%');
+    expect(html).not.toContain('OLD_PROGRAM');
+    expect(html).toContain('Tối đa 50.000đ');
+  });
   it.each([0, 500])('opens conditions for owned vouchers without allowing another %i-point claim', pointCost => {
     const details = vi.fn(), claim = vi.fn();
     const html = renderToStaticMarkup(<OfferCard voucher={{ ...voucher, claimed: true, pointCost }} owned width={300} busy={false} onClaim={claim} onDetails={details} />);

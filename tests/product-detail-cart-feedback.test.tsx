@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, expect, it, vi } from 'vitest';
 import ProductDetail from '../app/product/[id]';
 
-const state = vi.hoisted(() => ({ show: vi.fn(), invalidate: vi.fn(), push: vi.fn(), callbacks: [] as { onSuccess?: (result: unknown, buyNow: boolean) => unknown; onError?: (error: Error) => unknown }[] }));
+const state = vi.hoisted(() => ({ show: vi.fn(), invalidate: vi.fn(), push: vi.fn(), ratings: [] as number[], callbacks: [] as { onSuccess?: (result: unknown, buyNow: boolean) => unknown; onError?: (error: Error) => unknown }[] }));
 vi.mock('react-native', () => {
   const Container = ({ children }: { children?: React.ReactNode }) => <div>{children}</div>;
   return { View: Container, Text: Container, Pressable: Container, StyleSheet: { create: (value: unknown) => value }, useWindowDimensions: () => ({ width: 1200 }) };
@@ -23,17 +23,28 @@ vi.mock('../src/components/product/ProductDetailInfo', () => ({ ProductDetailInf
 vi.mock('../src/components/product/ProductDetailSidebar', () => ({ detailPanel: {}, ProductDetailSidebar: () => null }));
 vi.mock('../src/components/affiliate/ShareLinkActions', () => ({ ShareLinkActions: () => null }));
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: ({ queryKey }: { queryKey: string[] }) => ({ data: queryKey[0] === 'product' ? { id: 'p1', name: 'Tai nghe', brandId: 'b1', price: 100, variants: [{ id: 'v1', price: 100, availableStock: 10 }] } : undefined }),
+  useQuery: ({ queryKey }: { queryKey: string[] }) => ({ data: queryKey[0] === 'product' ? { id: 'p1', name: 'Tai nghe', brandId: 'b1', price: 100, variants: [{ id: 'v1', price: 100, availableStock: 10 }] } : queryKey[0] === 'reviews' ? { totalItems: state.ratings.length, items: state.ratings.map(rating => ({ rating })) } : undefined }),
   useMutation: (options: (typeof state.callbacks)[number]) => {
     state.callbacks.push(options);
     return { isSuccess: true, variables: false, error: options.onError ? new Error('API failure') : null };
   },
 }));
-beforeEach(() => { vi.clearAllMocks(); state.callbacks = []; });
+beforeEach(() => { vi.clearAllMocks(); state.callbacks = []; state.ratings = []; });
 function render() {
   const html = renderToStaticMarkup(<ProductDetail />);
   return { html, add: state.callbacks[3] };
 }
+it('shows the average rating followed by the actual review count', () => {
+  state.ratings = [5, 3, 4, 4, 4];
+  const { html } = render();
+  expect(html).toContain('4.0');
+  expect(html).toContain('/ 5 đánh giá');
+});
+it('keeps the unrated product state without an invented score', () => {
+  const { html } = render();
+  expect(html).toContain('Chưa có đánh giá');
+  expect(html).not.toContain('/ 0 đánh giá');
+});
 it('uses a top success toast and refreshes the cart after adding', async () => {
   const { add } = render();
   await add.onSuccess?.({}, false);

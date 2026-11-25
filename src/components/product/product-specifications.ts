@@ -1,8 +1,11 @@
 import type { Brand, Product, Variant } from '../../types/api';
 import { variantAttributes } from './variant-options';
 
-type Row = { key: string; label: string; value: string };
+type Row = { key: string; label: string; value: string; format?: 'text' };
 export type DisplaySpecificationGroup = { name: string; rows: Row[] };
+export const isLongSpecificationText = (value: string) => value.length > 300 || value.split(/\r\n?|\n/).length > 6;
+export const specificationNeedsExpansion = (groups: DisplaySpecificationGroup[]) => groups.reduce((count, group) => count + group.rows.length, 0) > 6
+  || groups.some(group => group.rows.some(row => row.format === 'text' && isLongSpecificationText(row.value)));
 const marker = '\n\nTHÔNG SỐ KỸ THUẬT\n';
 const labels: Record<string, string> = { color: 'Màu sắc', ram: 'RAM', storage: 'Bộ nhớ trong', size: 'Kích thước', configuration: 'Cấu hình', capacity: 'Dung tích', power: 'Công suất' };
 const legacyKeys: Record<string, string> = { 'ram': 'ram', 'màu sắc': 'color', 'bộ nhớ trong': 'storage', 'dung lượng': 'storage', 'kích thước': 'size' };
@@ -43,9 +46,11 @@ export function productSpecificationGroups(product: Product, variant?: Variant, 
     const value = item.value;
     if (value === null || !['string', 'number', 'boolean'].includes(typeof value) || typeof value === 'string' && !value.trim()) return [];
     const formatted = typeof value === 'boolean' ? value ? 'Có' : 'Không' : typeof value === 'number' ? value.toLocaleString('vi-VN') : String(value);
+    if (item.key === 'free_text' && typeof value === 'string') return [{ key: item.key, label: item.label, value, format: 'text' as const }];
     return [{ key: item.key, label: item.label, value: item.unit ? `${formatted} ${item.unit}` : formatted }];
   }) }));
-  const source = structured.some(group => group.rows.length) ? structured : legacyGroups(product);
+  const hasFreeText = product.specifications?.some(group => group.items.some(item => item.key === 'free_text' && typeof item.value === 'string'));
+  const source = structured.some(group => group.rows.length) || hasFreeText ? structured : legacyGroups(product);
   const groups = source.map(group => ({ ...group, rows: group.rows.filter(row => !Object.hasOwn(selected, row.key)) })).filter(group => group.rows.length);
   const options = Object.entries(selected).map(([key, value]) => ({ key, label: Object.hasOwn(labels, key) ? labels[key] : key, value }));
   if (options.length) groups.push({ name: 'Phiên bản đang chọn', rows: options });

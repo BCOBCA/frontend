@@ -1,11 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { productDescription, productSpecificationGroups } from '../src/components/product/product-specifications';
+import { productDescription, productSpecificationGroups, specificationNeedsExpansion } from '../src/components/product/product-specifications';
 import type { Product, Variant } from '../src/types/api';
 
 const product = { name: 'Phone', description: 'Mô tả sản phẩm', specifications: [{ name: 'Màn hình', items: [{ key: 'screen_size', label: 'Kích thước màn hình', value: 6.1, unit: 'inch' }] }, { name: 'Âm thanh', items: [{ key: 'stereo', label: 'Loa stereo', value: true }] }] } as Product;
 const variant = { id: 'v', sku: 'SKU-1', name: 'Đen / 128 GB', attributes: { color: 'Đen', storage: '128 GB', ram: '8 GB' } } as Variant;
 
 describe('category-driven specifications', () => {
+  it('preserves seller free text as one full-width plain-text item', () => {
+    const value = 'Chất liệu: cotton\n\nGiặt nhẹ, không tẩy.\n<script>literal text</script>';
+    const groups = productSpecificationGroups({ ...product, specifications: [{ name: 'Thông tin sản phẩm', items: [{ key: 'free_text', label: 'Chi tiết sản phẩm', value }] }] });
+    expect(groups[0].rows).toEqual([{ key: 'free_text', label: 'Chi tiết sản phẩm', value, format: 'text' }]);
+    expect(specificationNeedsExpansion(groups)).toBe(false);
+    expect(specificationNeedsExpansion([{ name: 'Details', rows: [{ ...groups[0].rows[0], value: 'x'.repeat(301) }] }])).toBe(true);
+    expect(specificationNeedsExpansion([{ name: 'Details', rows: [{ ...groups[0].rows[0], value: Array(7).fill('line').join('\n') }] }])).toBe(true);
+  });
+  it('hides empty free text without reviving legacy values', () => {
+    expect(productSpecificationGroups({ ...product, description: 'Intro\n\nTHÔNG SỐ KỸ THUẬT\nOld: stale', specifications: [{ name: 'Details', items: [{ key: 'free_text', label: 'Details', value: '  \n' }] }] })).toEqual([]);
+  });
   it('formats typed values and units without hardcoding product models', () => {
     const groups = productSpecificationGroups(product, variant);
     expect(groups[0].rows[0].value).toBe('6,1 inch');

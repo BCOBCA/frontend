@@ -36,6 +36,7 @@ describe('notification inbox behavior', () => {
     expect(mark).toHaveBeenCalledWith('2');
   });
   it('only opens known targets with a target ID', () => {
+    expect(notificationTarget(item('4', 'Review'))).toEqual({ pathname: '/review/[id]', params: { id: 'target-4' } });
     expect(notificationTarget(item('1'))).toEqual({ pathname: '/order/[id]', params: { id: 'target-1' } });
     expect(notificationTarget(item('2', 'Unknown'))).toBeNull();
     expect(notificationTarget({ ...item('3'), targetId: null })).toBeNull();

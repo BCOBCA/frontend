@@ -24,9 +24,10 @@ function OutlineAction({ title, label, Icon, disabled, onPress }: { title: strin
 
 function ProductRow({ item, reviewable, onReview }: { item: OrderItem; reviewable: boolean; onReview: () => void }) {
   const [failed, setFailed] = useState<string | null>(null);
+  const reviewLabel = item.hasReview ? 'Xem đánh giá' : 'Đánh giá';
   return <View style={[divider, { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 }]}>
     <View style={{ width: 68, height: 68, flexShrink: 0, borderRadius: 7, overflow: 'hidden', backgroundColor: '#F3F3F6', alignItems: 'center', justifyContent: 'center' }}>{item.imageUrl && failed !== item.imageUrl ? <Image source={{ uri: item.imageUrl }} contentFit="contain" accessibilityLabel={item.productName} style={{ width: '100%', height: '100%' }} onError={() => setFailed(item.imageUrl ?? '')} /> : <Package size={28} color={colors.muted} />}</View>
-    <View style={{ flex: 1, minWidth: 0, gap: 5 }}><Text style={{ color: colors.text, fontSize: 14, lineHeight: 21, fontWeight: '600' }}>{item.productName}</Text>{!!item.variantName && <Text style={{ color: colors.muted, fontSize: 12, lineHeight: 18 }}>{item.variantName}</Text>}<Text style={{ color: '#E1232E', fontSize: 15, fontWeight: '700' }}>{money(item.unitPrice)}</Text>{(item.quantity > 1 || item.totalPrice !== item.unitPrice) && <Text style={{ color: colors.muted, fontSize: 12, lineHeight: 18 }}>Thành tiền: {money(item.totalPrice)}</Text>}{reviewable && <Pressable accessibilityRole="button" accessibilityLabel={`Đánh giá ${item.productName}`} onPress={onReview} style={({ pressed }) => ({ minHeight: 36, alignSelf: 'flex-start', justifyContent: 'center', paddingHorizontal: 10, borderWidth: 1, borderColor: '#F4B6BB', borderRadius: 6, opacity: pressed ? 0.6 : 1 })}><Text style={{ color: '#D92833', fontSize: 12, fontWeight: '600' }}>Đánh giá</Text></Pressable>}</View>
+    <View style={{ flex: 1, minWidth: 0, gap: 5 }}><Text style={{ color: colors.text, fontSize: 14, lineHeight: 21, fontWeight: '600' }}>{item.productName}</Text>{!!item.variantName && <Text style={{ color: colors.muted, fontSize: 12, lineHeight: 18 }}>{item.variantName}</Text>}<Text style={{ color: '#E1232E', fontSize: 15, fontWeight: '700' }}>{money(item.unitPrice)}</Text>{(item.quantity > 1 || item.totalPrice !== item.unitPrice) && <Text style={{ color: colors.muted, fontSize: 12, lineHeight: 18 }}>Thành tiền: {money(item.totalPrice)}</Text>}{(reviewable || item.hasReview) && <Pressable accessibilityRole="button" accessibilityLabel={`${reviewLabel} ${item.productName}`} onPress={onReview} style={({ pressed }) => ({ minHeight: 36, alignSelf: 'flex-start', justifyContent: 'center', paddingHorizontal: 10, borderWidth: 1, borderColor: '#F4B6BB', borderRadius: 6, opacity: pressed ? 0.6 : 1 })}><Text style={{ color: '#D92833', fontSize: 12, fontWeight: '600' }}>{reviewLabel}</Text></Pressable>}</View>
     <Text style={{ color: colors.text, fontSize: 13, fontWeight: '600' }}>x{item.quantity}</Text>
   </View>;
 }
@@ -62,7 +63,7 @@ export function OrderDetailView({ order, busy, refreshing, onCancel, onRefund, o
   const blocked = busy || refreshing;
   const count = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const history = [...(order.history ?? [])].sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt));
-  const reviewable = order.status === 'COMPLETED' || order.status === 'REFUNDED';
+  const reviewable = order.canReview ?? (order.status === 'COMPLETED' || order.status === 'REFUNDED' || order.shipments.some(shipment => !!shipment.deliveredAt));
   const BannerIcon = order.status === 'CANCELLED' ? CircleX : order.status === 'REFUNDED' ? RotateCcw : CircleCheck;
   const payment = order.paymentMethod === 'COD' || !order.paymentMethod ? 'Thanh toán khi nhận hàng (COD)' : order.paymentMethod;
   const paymentStatus = order.paymentStatus === 'REFUNDED' ? 'Đã hoàn tiền' : order.paymentStatus === 'PAID' ? 'Đã thanh toán' : order.paymentStatus === 'UNPAID' ? 'Chưa thanh toán' : order.paymentStatus;

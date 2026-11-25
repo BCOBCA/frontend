@@ -19,7 +19,7 @@ export function ProductVariantSelector({ variants, selected, onSelect, compact =
           </Pressable>;
         })}
       </View>
-    </View>)}</View> : <View style={{ gap: 8 }}><Text style={s.body}>Phiên bản</Text><View accessibilityRole="radiogroup" accessibilityLabel="Phiên bản" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+    </View>)}</View> : <View style={{ gap: 8 }}><View accessibilityRole="radiogroup" accessibilityLabel="Phiên bản" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
       {variants.map(item => <Pressable key={item.id} accessibilityRole="radio" accessibilityLabel={item.name} aria-checked={selected?.id === item.id} aria-disabled={item.availableStock <= 0} accessibilityState={{ checked: selected?.id === item.id, disabled: item.availableStock <= 0 }} disabled={item.availableStock <= 0} onPress={() => onSelect(item.id)} style={{ minHeight: compact ? 32 : 36, justifyContent: 'center', paddingHorizontal: compact ? 8 : 10, paddingVertical: compact ? 4 : 6, borderWidth: 1, borderRadius: 6, borderColor: selected?.id === item.id ? colors.primary : colors.border, opacity: item.availableStock > 0 ? 1 : 0.45 }}><Text style={[s.body, { fontSize: compact ? 12 : 13 }]}>{item.name}</Text></Pressable>)}
     </View></View>}
     {!variants.length && <Text style={s.small}>Chưa có phiên bản để đặt mua.</Text>}

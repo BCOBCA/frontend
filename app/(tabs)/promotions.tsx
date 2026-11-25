@@ -1,16 +1,17 @@
 import { useCallback, useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { useInfiniteQuery, useMutation, useQuery, type InfiniteData } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { ChevronRight, Crown, Flame, Gift, Percent, Star, TicketPercent, X, Zap } from 'lucide-react-native';
+import { ChevronRight, Crown, Flame, Gift, Percent, Star, TicketPercent, Zap } from 'lucide-react-native';
 import { MemberStar } from '../../src/components/membership/MemberStar';
 import { Page as PageView, Button, Status, Empty } from '../../src/components/common/ui';
 import { OfferCard } from '../../src/components/promotions/OfferCard';
+import { OfferDetails } from '../../src/components/promotions/OfferDetails';
 import { gridItemWidth } from '../../src/components/common/grid-layout';
 import { CheckInPanel } from '../../src/components/promotions/CheckInPanel';
 import { TopToast } from '../../src/components/common/TopToast';
 import { filterOffers, offerRestriction, type OfferCategory } from '../../src/components/promotions/offers';
-import { colors, money, styles as s } from '../../src/theme';
+import { colors, styles as s } from '../../src/theme';
 import { errorMessage, request } from '../../src/services/api';
 import { queryClient, useAuth } from '../../src/stores/auth';
 import type { Membership, Page, Voucher } from '../../src/types/api';
@@ -104,24 +105,12 @@ export default function Promotions() {
       </View>}
       {vouchers.hasNextPage && <Button title={vouchers.isFetchingNextPage ? 'Đang tải...' : 'Tải thêm ưu đãi'} disabled={vouchers.isFetchingNextPage} outline onPress={() => void vouchers.fetchNextPage()} />}
     </View>
-    <Modal transparent animationType="fade" visible={selected !== null} onRequestClose={() => { if (!selectedBusy) setSelected(null); }}>
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00000066', padding: 16 }}>
-        <View accessibilityViewIsModal style={{ width: '100%', maxWidth: 460, maxHeight: '90%', backgroundColor: colors.surface, borderRadius: 18, padding: 20, gap: 14 }}>
-          <View style={s.between}><Text accessibilityRole="header" style={[s.title, { flex: 1 }]}>{selected?.redeem ? 'Xác nhận đổi ưu đãi' : 'Điều kiện ưu đãi'}</Text><Pressable accessibilityRole="button" accessibilityLabel="Đóng điều kiện ưu đãi" disabled={selectedBusy} onPress={() => setSelected(null)} style={{ width: 44, height: 44, justifyContent: 'center', alignItems: 'center' }}><X size={22} color={colors.text} /></Pressable></View>
-          <ScrollView contentContainerStyle={{ gap: 12 }}>
-            <Text style={[s.title, { color: colors.primary }]}>{selected?.voucher.name}</Text>
-            <Text style={s.body}>{selected?.voucher.description}</Text>
-            <Text style={s.body}>Đơn từ {money(selected?.voucher.minOrderAmount ?? 0)} tính trên giá trị hàng.</Text>
-            <Text style={s.body}>{selected?.voucher.discountType === 'SHIPPING' ? 'Giảm trực tiếp phí vận chuyển thực tế, tối đa mức ưu đãi. Không trừ vào tiền hàng.' : 'Giảm tiền hàng, không áp dụng cho phí vận chuyển.'}</Text>
-            {selected?.voucher.maxDiscount !== null && selected?.voucher.maxDiscount !== undefined && <Text style={s.body}>Giảm tối đa {money(selected.voucher.maxDiscount)}.</Text>}
-            {selected && <Text style={s.small}>Hạn sử dụng: {new Date(selected.voucher.expiresAt).toLocaleDateString('vi-VN')}.</Text>}
-            {selected?.redeem && <><Text style={s.body}>Sử dụng {(selected.voucher.pointCost ?? 0).toLocaleString('vi-VN')} điểm. Số dư sau đổi: {Math.max(0, (member.data?.availablePoints ?? 0) - (selected.voucher.pointCost ?? 0)).toLocaleString('vi-VN')} điểm.</Text><Text style={s.small}>Tổng điểm tích lũy và level của bạn không thay đổi. Mỗi ưu đãi đổi điểm được đổi một lần; điểm không tự hoàn khi hủy đơn, voucher sẽ được khôi phục để dùng lại trong thời hạn.</Text></>}
+    {selected && <OfferDetails item={selected.voucher} onClose={() => setSelected(null)} busy={selectedBusy} heading={selected.redeem ? 'Xác nhận đổi ưu đãi' : undefined} footer={<>
+          {selected.redeem && <Button title={selectedBusy ? 'Đang đổi...' : 'Xác nhận đổi điểm'} disabled={selectedBusy || !user || !member.data || !!offerRestriction(selected.voucher, member.data)} onPress={() => { if (selected && !selectedBusy) claim.mutate(selected.voucher); }} />}
+          {selected.redeem && <Button title="Để sau" outline disabled={selectedBusy} onPress={() => setSelected(null)} />}
+        </>}>
+            {selected.redeem && <><Text style={s.body}>Sử dụng {(selected.voucher.pointCost ?? 0).toLocaleString('vi-VN')} điểm. Số dư sau đổi: {Math.max(0, (member.data?.availablePoints ?? 0) - (selected.voucher.pointCost ?? 0)).toLocaleString('vi-VN')} điểm.</Text><Text style={s.small}>Tổng điểm tích lũy và level của bạn không thay đổi. Mỗi ưu đãi đổi điểm được đổi một lần; điểm không tự hoàn khi hủy đơn, voucher sẽ được khôi phục để dùng lại trong thời hạn.</Text></>}
             {!!claim.error && <Text accessibilityRole="alert" style={s.error}>{errorMessage(claim.error)}</Text>}
-          </ScrollView>
-          {selected?.redeem && <Button title={selectedBusy ? 'Đang đổi...' : 'Xác nhận đổi điểm'} disabled={selectedBusy || !user || !member.data || !!offerRestriction(selected.voucher, member.data)} onPress={() => { if (selected && !selectedBusy) claim.mutate(selected.voucher); }} />}
-          {selected?.redeem && <Button title="Để sau" outline disabled={selectedBusy} onPress={() => setSelected(null)} />}
-        </View>
-      </View>
-    </Modal>
+    </OfferDetails>}
   </PageView>;
 }

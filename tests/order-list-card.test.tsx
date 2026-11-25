@@ -29,10 +29,23 @@ it('keeps copy, store, cancel and details as separate working controls', () => {
   state.actions['Sao chép mã đơn BCA123'](); state.actions['Xem cửa hàng ANKT Store'](); state.actions['Hủy đơn BCA123'](); state.actions['Xem chi tiết đơn BCA123']();
   expect(callbacks.onCopy).toHaveBeenCalledOnce(); expect(callbacks.onStore).toHaveBeenCalledWith('ankt'); expect(callbacks.onCancel).toHaveBeenCalledOnce(); expect(callbacks.onDetails).toHaveBeenCalledOnce();
 });
+
+it('allows delivered buyers to review before COD settles and respects server denial', () => {
+  expect(renderToStaticMarkup(<OrderListCard order={{ ...order, status: 'SHIPPING', canReview: true }} {...actions()} />)).toContain('Đánh giá');
+  expect(renderToStaticMarkup(<OrderListCard order={{ ...order, status: 'COMPLETED', canReview: false }} {...actions()} />)).not.toContain('Đánh giá');
+});
 it('supports historic orders from several shops and absent metadata', () => {
   const multi = renderToStaticMarkup(<OrderListCard order={{ ...order, items: [{ ...order.items![0], storeId: 'a' }, { ...order.items![0], id: 'second', storeId: 'b', storeName: 'Shop B', storeSlug: 'b' }] }} {...actions()} />);
   expect(multi).toContain('Shop B');
   expect(renderToStaticMarkup(<OrderListCard order={{ ...order, items: undefined }} {...actions()} />)).toContain('Xem sản phẩm trong chi tiết đơn hàng');
+});
+it('replaces the review action with viewing after all products are reviewed', () => {
+  const reviewed = { ...order.items![0], hasReview: true };
+  const html = renderToStaticMarkup(<OrderListCard order={{ ...order, status: 'COMPLETED', items: [reviewed] }} {...actions()} />);
+  expect(html).toContain('Xem đánh giá');
+  expect(html).not.toContain('>Đánh giá<');
+  const mixed = renderToStaticMarkup(<OrderListCard order={{ ...order, status: 'COMPLETED', items: [reviewed, { ...order.items![0], id: 'other' }] }} {...actions()} />);
+  expect(mixed).toContain('>Đánh giá<');
 });
 it('shows only the first product per shop and counts the hidden lines', () => {
   const html = renderToStaticMarkup(<OrderListCard order={{ ...order, items: [order.items![0], { ...order.items![0], id: 'second', productName: 'Sản phẩm thứ hai' }] }} {...actions()} />);

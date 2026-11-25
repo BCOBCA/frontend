@@ -28,13 +28,14 @@ export function usePushNotifications(accountId?: string) {
     if (!accountId) return;
     let active = true;
     const register = () => { if (active && useAuth.getState().user?.accountId === accountId) void enablePushNotifications(false).catch(() => {}); };
-    const refresh = () => { for (const key of ['notifications', 'orders', 'order', 'membership']) void queryClient.invalidateQueries({ queryKey: [key] }); };
+    const refresh = () => { for (const key of ['notifications', 'orders', 'order', 'membership', 'reviews', 'my-review']) void queryClient.invalidateQueries({ queryKey: [key] }); };
     const open = (response: Notifications.NotificationResponse) => {
       if (!active || useAuth.getState().user?.accountId !== accountId) return;
       refresh();
       const data = response.notification.request.content.data;
       if (!data) return;
       if (data.targetType === 'Order' && typeof data.targetId === 'string' && /^[0-9a-f-]{36}$/i.test(data.targetId)) router.push({ pathname: '/order/[id]', params: { id: data.targetId } });
+      if (data.targetType === 'Review' && typeof data.targetId === 'string' && /^[0-9a-f-]{36}$/i.test(data.targetId)) router.push({ pathname: '/review/[id]', params: { id: data.targetId } });
     };
     register();
     const wake = AppState.addEventListener('change', state => { if (state === 'active') register(); });
