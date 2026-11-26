@@ -18,6 +18,18 @@ beforeEach(() => { vi.unstubAllGlobals(); vi.resetModules(); state.clients.lengt
 afterEach(() => { vi.useRealTimers(); });
 
 describe('API session recovery', () => {
+  it.each(['Customer', 'Seller', 'Admin', 'SuperAdmin'])('accepts single-role %s profiles and replaces permissions on refresh', async role => {
+    const api = await import('../src/services/api');
+    const changed = vi.fn(); api.onSessionProfileChanged(changed);
+    const transport = new MockAdapter(state.clients[0]);
+    const user = { ...profile('single-role'), roles: [role] };
+    transport.onPost('/auth/login').reply(200, { success: true, data: { ...authReply.data, user } });
+    expect((await api.loginSession({ identifier: user.email, password: 'test-only-password' })).user.roles).toEqual([role]);
+    transport.onPost('/auth/refresh').reply(200, { success: true, data: { ...authReply.data, user: { ...user, roles: ['Customer'] } } });
+    expect((await api.refreshSession()).user.roles).toEqual(['Customer']);
+    expect(changed.mock.lastCall?.[0].roles).toEqual(['Customer']);
+  });
+
   it('refreshes before sending requests when the access token is close to expiry', async () => {
     vi.useFakeTimers(); vi.setSystemTime(new Date('2026-11-12T02:00:00Z'));
     const api = await import('../src/services/api');
